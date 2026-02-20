@@ -110,6 +110,8 @@ class FriendActivityModel {
     required this.durationSec,
     required this.avgPaceSec,
     required this.calories,
+    required this.cheerCount,
+    required this.cheeredByMe,
   });
 
   final String runId;
@@ -121,6 +123,8 @@ class FriendActivityModel {
   final int durationSec;
   final int avgPaceSec;
   final int calories;
+  final int cheerCount;
+  final bool cheeredByMe;
 
   factory FriendActivityModel.fromJson(Map<String, dynamic> json) {
     return FriendActivityModel(
@@ -133,6 +137,8 @@ class FriendActivityModel {
       durationSec: json['durationSec'] as int,
       avgPaceSec: json['avgPaceSec'] as int,
       calories: json['calories'] as int,
+      cheerCount: (json['cheerCount'] as num?)?.toInt() ?? 0,
+      cheeredByMe: json['cheeredByMe'] as bool? ?? false,
     );
   }
 }

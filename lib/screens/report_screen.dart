@@ -15,6 +15,7 @@ class ReportScreen extends StatefulWidget {
     required this.onRefresh,
     required this.onSearchUsers,
     required this.onSendRequest,
+    required this.onCheerActivity,
     required this.onAcceptRequest,
     required this.onRejectRequest,
     required this.onCancelOutgoingRequest,
@@ -34,6 +35,7 @@ class ReportScreen extends StatefulWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function(String query) onSearchUsers;
   final Future<void> Function(String username) onSendRequest;
+  final Future<void> Function(String runId) onCheerActivity;
   final Future<void> Function(int requestId) onAcceptRequest;
   final Future<void> Function(int requestId) onRejectRequest;
   final Future<void> Function(int requestId) onCancelOutgoingRequest;
@@ -87,6 +89,11 @@ class _ReportScreenState extends State<ReportScreen> {
                       Text('${item.displayName} (@${item.username})', style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text('Run ${item.distanceKm.toStringAsFixed(2)}km · ${item.durationSec}s · ${item.calories} kcal'),
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: widget.isBusy ? null : () => widget.onCheerActivity(item.runId),
+                        child: Text(item.cheeredByMe ? 'Cheered (${item.cheerCount})' : 'Cheer (${item.cheerCount})'),
+                      ),
                     ],
                   ),
                 ),

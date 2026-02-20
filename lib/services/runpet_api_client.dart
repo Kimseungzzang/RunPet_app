@@ -110,6 +110,13 @@ class RunpetApiClient {
     return list.map((e) => FriendActivityModel.fromJson(e)).toList();
   }
 
+  Future<void> cheerFriendActivity({required String runId}) async {
+    final response = await _request('POST', '/api/v1/friends/activity/$runId/cheer');
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _decodeOrThrow(response);
+    }
+  }
+
   Future<List<FriendRequestModel>> getIncomingFriendRequests() async {
     final response = await _request('GET', '/api/v1/friends/requests/incoming');
     final list = _decodeListOrThrow(response);

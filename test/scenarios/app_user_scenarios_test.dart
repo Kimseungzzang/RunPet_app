@@ -328,10 +328,16 @@ RunpetApiClient _apiClient({
               'durationSec': 1200,
               'avgPaceSec': 374,
               'calories': 240,
+              'cheerCount': 0,
+              'cheeredByMe': false,
             },
           ]),
           200,
         );
+      }
+
+      if (request.method == 'POST' && request.url.path == '/api/v1/friends/activity/run_friend_001/cheer') {
+        return http.Response('', 200);
       }
 
       if (request.method == 'GET' && request.url.path == '/api/v1/friends/blocks') {
@@ -520,6 +526,8 @@ void main() {
       expect(find.text('New Friend'), findsOneWidget);
       expect(find.text('Friend activity feed'), findsOneWidget);
       expect(find.textContaining('Run 3.21km'), findsOneWidget);
+      await tester.tap(find.text('Cheer (0)'), warnIfMissed: false);
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.text('Buddy (@buddy)'),
         200,
