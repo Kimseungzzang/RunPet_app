@@ -353,9 +353,25 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       appBar: AppBar(
         title: Text('RunPet - $userName'),
         actions: [
-          IconButton(
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'logout_current') {
+                ref.read(authControllerProvider.notifier).logout();
+              } else if (value == 'logout_all') {
+                ref.read(authControllerProvider.notifier).logout(allSessions: true);
+              }
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: 'logout_current',
+                child: Text('Logout this device'),
+              ),
+              PopupMenuItem(
+                value: 'logout_all',
+                child: Text('Logout all devices'),
+              ),
+            ],
+            icon: const Icon(Icons.account_circle_outlined),
           ),
         ],
       ),

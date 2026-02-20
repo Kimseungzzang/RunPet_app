@@ -94,6 +94,10 @@ class RunpetApiClient {
     );
   }
 
+  Future<void> logoutAll() async {
+    await _post('/api/v1/auth/logout-all', body: const {});
+  }
+
   Future<List<FriendModel>> getFriends() async {
     final response = await _request('GET', '/api/v1/friends');
     final list = _decodeListOrThrow(response);

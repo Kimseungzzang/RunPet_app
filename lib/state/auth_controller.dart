@@ -127,14 +127,18 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout({bool allSessions = false}) async {
     final session = state.session;
     if (session != null) {
       try {
-        await _apiClient.logout(
-          sessionId: session.sessionId,
-          refreshToken: session.refreshToken,
-        );
+        if (allSessions) {
+          await _apiClient.logoutAll();
+        } else {
+          await _apiClient.logout(
+            sessionId: session.sessionId,
+            refreshToken: session.refreshToken,
+          );
+        }
       } catch (_) {
         // Intentionally ignore to allow local logout.
       }
