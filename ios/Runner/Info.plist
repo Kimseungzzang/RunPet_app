@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RunPet uses your location to track running distance and pace.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>RunPet uses your location to continue tracking during active runs.</string>
 </dict>
 </plist>

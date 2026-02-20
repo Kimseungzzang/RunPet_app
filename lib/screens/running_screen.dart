@@ -7,6 +7,10 @@ class RunningScreen extends StatelessWidget {
     required this.isRunning,
     required this.hasActiveRun,
     required this.isBusy,
+    required this.distanceKm,
+    required this.durationSec,
+    required this.avgPaceSec,
+    required this.calories,
     required this.onStartRun,
     required this.onToggleRunning,
     required this.onFinish,
@@ -15,6 +19,10 @@ class RunningScreen extends StatelessWidget {
   final bool isRunning;
   final bool hasActiveRun;
   final bool isBusy;
+  final double distanceKm;
+  final int durationSec;
+  final int avgPaceSec;
+  final int calories;
   final VoidCallback onStartRun;
   final VoidCallback onToggleRunning;
   final VoidCallback onFinish;
@@ -26,13 +34,13 @@ class RunningScreen extends StatelessWidget {
       children: [
         Text('Running tracker', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
-        const RunpetCard(
+        RunpetCard(
           child: Column(
             children: [
-              _MetricRow(label: 'Distance', value: '2.14 km'),
-              _MetricRow(label: 'Duration', value: '18:42'),
-              _MetricRow(label: 'Pace', value: '5\'12"'),
-              _MetricRow(label: 'Calories', value: '178 kcal'),
+              _MetricRow(label: 'Distance', value: '${distanceKm.toStringAsFixed(2)} km'),
+              _MetricRow(label: 'Duration', value: _formatDuration(durationSec)),
+              _MetricRow(label: 'Pace', value: _formatPace(avgPaceSec)),
+              _MetricRow(label: 'Calories', value: '$calories kcal'),
             ],
           ),
         ),
@@ -57,6 +65,19 @@ class RunningScreen extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  String _formatDuration(int totalSec) {
+    final m = (totalSec ~/ 60).toString().padLeft(2, '0');
+    final s = (totalSec % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  String _formatPace(int paceSec) {
+    if (paceSec <= 0) return '--';
+    final m = (paceSec ~/ 60).toString();
+    final s = (paceSec % 60).toString().padLeft(2, '0');
+    return '$m\'$s"';
   }
 }
 
