@@ -112,6 +112,15 @@ class RunpetApiClient {
     return list.map((e) => FriendRequestModel.fromJson(e)).toList();
   }
 
+  Future<List<FriendSearchUserModel>> searchFriendUsers({
+    required String query,
+  }) async {
+    final encoded = Uri.encodeQueryComponent(query);
+    final response = await _request('GET', '/api/v1/friends/search?query=$encoded');
+    final list = _decodeListOrThrow(response);
+    return list.map((e) => FriendSearchUserModel.fromJson(e)).toList();
+  }
+
   Future<FriendRequestModel> sendFriendRequest({
     required String targetUsername,
   }) async {

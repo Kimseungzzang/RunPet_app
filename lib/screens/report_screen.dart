@@ -8,8 +8,10 @@ class ReportScreen extends StatefulWidget {
     required this.friends,
     required this.incomingRequests,
     required this.outgoingRequests,
+    required this.searchResults,
     required this.isBusy,
     required this.onRefresh,
+    required this.onSearchUsers,
     required this.onSendRequest,
     required this.onAcceptRequest,
     required this.onRejectRequest,
@@ -20,8 +22,10 @@ class ReportScreen extends StatefulWidget {
   final List<FriendModel> friends;
   final List<FriendRequestModel> incomingRequests;
   final List<FriendRequestModel> outgoingRequests;
+  final List<FriendSearchUserModel> searchResults;
   final bool isBusy;
   final Future<void> Function() onRefresh;
+  final Future<void> Function(String query) onSearchUsers;
   final Future<void> Function(String username) onSendRequest;
   final Future<void> Function(int requestId) onAcceptRequest;
   final Future<void> Function(int requestId) onRejectRequest;
@@ -76,12 +80,34 @@ class _ReportScreenState extends State<ReportScreen> {
                     ? null
                     : () async {
                         final username = _friendUsernameController.text.trim();
-                        if (username.isEmpty) return;
-                        await widget.onSendRequest(username);
-                        _friendUsernameController.clear();
+                        if (username.length < 2) return;
+                        await widget.onSearchUsers(username);
                       },
-                child: const Text('Send request'),
+                child: const Text('Search users'),
               ),
+              if (widget.searchResults.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                const Text('Search result', style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                for (final user in widget.searchResults)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text('${user.displayName} (@${user.username})')),
+                        TextButton(
+                          onPressed: widget.isBusy
+                              ? null
+                              : () async {
+                                  await widget.onSendRequest(user.username);
+                                  _friendUsernameController.clear();
+                                },
+                          child: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ],
           ),
         ),

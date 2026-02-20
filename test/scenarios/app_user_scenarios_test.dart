@@ -266,6 +266,19 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'GET' && request.url.path == '/api/v1/friends/search') {
+        return http.Response(
+          jsonEncode([
+            {
+              'userId': 'friend_004',
+              'username': 'someone',
+              'displayName': 'Some One',
+            },
+          ]),
+          200,
+        );
+      }
+
       if (request.method == 'POST' && request.url.path == '/api/v1/friends/requests') {
         return http.Response(
           jsonEncode({
@@ -469,11 +482,11 @@ void main() {
       expect(find.text('someone (pending)'), findsOneWidget);
       await tester.enterText(find.byType(TextField).first, 'someone');
       await tester.scrollUntilVisible(
-        find.text('Send request'),
+        find.text('Search users'),
         -120,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.text('Send request'), warnIfMissed: false);
+      await tester.tap(find.text('Search users'), warnIfMissed: false);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancel'), warnIfMissed: false);
       await tester.pumpAndSettle();

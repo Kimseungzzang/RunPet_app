@@ -36,6 +36,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   List<FriendModel> _friends = const [];
   List<FriendRequestModel> _incomingFriendRequests = const [];
   List<FriendRequestModel> _outgoingFriendRequests = const [];
+  List<FriendSearchUserModel> _friendSearchResults = const [];
 
   @override
   void initState() {
@@ -203,9 +204,26 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     try {
       final api = ref.read(apiClientProvider);
       await api.sendFriendRequest(targetUsername: username);
+      setState(() => _friendSearchResults = const []);
       await _loadFriends();
     } catch (e) {
       _showError('Failed to send request: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
+  Future<void> _searchFriendUsers(String query) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      final users = await api.searchFriendUsers(query: query);
+      if (!mounted) return;
+      setState(() {
+        _friendSearchResults = users;
+      });
+    } catch (e) {
+      _showError('Failed to search users: $e');
+    } finally {
       if (mounted) setState(() => _friendBusy = false);
     }
   }
@@ -319,8 +337,10 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         friends: _friends,
         incomingRequests: _incomingFriendRequests,
         outgoingRequests: _outgoingFriendRequests,
+        searchResults: _friendSearchResults,
         isBusy: _friendBusy,
         onRefresh: _loadFriends,
+        onSearchUsers: _searchFriendUsers,
         onSendRequest: _sendFriendRequest,
         onAcceptRequest: _acceptFriendRequest,
         onRejectRequest: _rejectFriendRequest,
