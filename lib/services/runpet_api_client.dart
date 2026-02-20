@@ -104,6 +104,12 @@ class RunpetApiClient {
     return list.map((e) => FriendModel.fromJson(e)).toList();
   }
 
+  Future<List<FriendActivityModel>> getFriendActivities({int limit = 20}) async {
+    final response = await _request('GET', '/api/v1/friends/activity?limit=$limit');
+    final list = _decodeListOrThrow(response);
+    return list.map((e) => FriendActivityModel.fromJson(e)).toList();
+  }
+
   Future<List<FriendRequestModel>> getIncomingFriendRequests() async {
     final response = await _request('GET', '/api/v1/friends/requests/incoming');
     final list = _decodeListOrThrow(response);

@@ -10,6 +10,7 @@ class ReportScreen extends StatefulWidget {
     required this.outgoingRequests,
     required this.searchResults,
     required this.blockedUsers,
+    required this.activities,
     required this.isBusy,
     required this.onRefresh,
     required this.onSearchUsers,
@@ -27,6 +28,7 @@ class ReportScreen extends StatefulWidget {
   final List<FriendRequestModel> outgoingRequests;
   final List<FriendSearchUserModel> searchResults;
   final List<BlockedUserModel> blockedUsers;
+  final List<FriendActivityModel> activities;
   final bool isBusy;
   final Future<void> Function() onRefresh;
   final Future<void> Function(String query) onSearchUsers;
@@ -67,6 +69,28 @@ class _ReportScreenState extends State<ReportScreen> {
           ],
         ),
         const SizedBox(height: 12),
+        RunpetCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Friend activity feed', style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              if (widget.activities.isEmpty) const Text('No recent friend runs'),
+              for (final item in widget.activities)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${item.displayName} (@${item.username})', style: const TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text('Run ${item.distanceKm.toStringAsFixed(2)}km · ${item.durationSec}s · ${item.calories} kcal'),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
         RunpetCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

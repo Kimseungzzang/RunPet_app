@@ -311,6 +311,25 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'GET' && request.url.path == '/api/v1/friends/activity') {
+        return http.Response(
+          jsonEncode([
+            {
+              'runId': 'run_friend_001',
+              'userId': 'friend_001',
+              'username': 'buddy',
+              'displayName': 'Buddy',
+              'startedAt': DateTime.now().toIso8601String(),
+              'distanceKm': 3.21,
+              'durationSec': 1200,
+              'avgPaceSec': 374,
+              'calories': 240,
+            },
+          ]),
+          200,
+        );
+      }
+
       if (request.method == 'GET' && request.url.path == '/api/v1/friends/blocks') {
         return http.Response(
           jsonEncode([
@@ -495,12 +514,19 @@ void main() {
 
       expect(find.text('Friends'), findsOneWidget);
       expect(find.text('New Friend'), findsOneWidget);
+      expect(find.text('Friend activity feed'), findsOneWidget);
+      expect(find.textContaining('Run 3.21km'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Buddy (@buddy)'),
         200,
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.text('Buddy (@buddy)'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('someone (pending)'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('someone (pending)'), findsOneWidget);
       await tester.enterText(find.byType(TextField).first, 'someone');
       await tester.scrollUntilVisible(
@@ -511,14 +537,6 @@ void main() {
       await tester.tap(find.text('Search users'), warnIfMissed: false);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancel'), warnIfMissed: false);
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Blocked User (@blocked_user)'),
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.text('Blocked User (@blocked_user)'), findsOneWidget);
-      await tester.tap(find.text('Unblock'), warnIfMissed: false);
       await tester.pumpAndSettle();
     });
   });

@@ -98,3 +98,41 @@ class BlockedUserModel {
     );
   }
 }
+
+class FriendActivityModel {
+  const FriendActivityModel({
+    required this.runId,
+    required this.userId,
+    required this.username,
+    required this.displayName,
+    required this.startedAt,
+    required this.distanceKm,
+    required this.durationSec,
+    required this.avgPaceSec,
+    required this.calories,
+  });
+
+  final String runId;
+  final String userId;
+  final String username;
+  final String displayName;
+  final DateTime startedAt;
+  final double distanceKm;
+  final int durationSec;
+  final int avgPaceSec;
+  final int calories;
+
+  factory FriendActivityModel.fromJson(Map<String, dynamic> json) {
+    return FriendActivityModel(
+      runId: json['runId'] as String,
+      userId: json['userId'] as String,
+      username: json['username'] as String,
+      displayName: json['displayName'] as String,
+      startedAt: DateTime.parse(json['startedAt'] as String),
+      distanceKm: (json['distanceKm'] as num).toDouble(),
+      durationSec: json['durationSec'] as int,
+      avgPaceSec: json['avgPaceSec'] as int,
+      calories: json['calories'] as int,
+    );
+  }
+}

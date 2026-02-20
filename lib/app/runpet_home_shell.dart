@@ -38,6 +38,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   List<FriendRequestModel> _outgoingFriendRequests = const [];
   List<FriendSearchUserModel> _friendSearchResults = const [];
   List<BlockedUserModel> _blockedUsers = const [];
+  List<FriendActivityModel> _friendActivities = const [];
 
   @override
   void initState() {
@@ -188,12 +189,14 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       final incoming = await api.getIncomingFriendRequests();
       final outgoing = await api.getOutgoingFriendRequests();
       final blocked = await api.getBlockedUsers();
+      final activities = await api.getFriendActivities(limit: 20);
       if (!mounted) return;
       setState(() {
         _friends = friends;
         _incomingFriendRequests = incoming;
         _outgoingFriendRequests = outgoing;
         _blockedUsers = blocked;
+        _friendActivities = activities;
       });
     } catch (e) {
       _showError('Failed to load friends: $e');
@@ -366,6 +369,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         outgoingRequests: _outgoingFriendRequests,
         searchResults: _friendSearchResults,
         blockedUsers: _blockedUsers,
+        activities: _friendActivities,
         isBusy: _friendBusy,
         onRefresh: _loadFriends,
         onSearchUsers: _searchFriendUsers,
