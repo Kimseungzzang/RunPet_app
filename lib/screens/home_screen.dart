@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/theme/app_theme.dart';
+import 'package:runpet_app/widgets/pet_avatar.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -36,8 +37,12 @@ class HomeScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: AppTheme.line),
           ),
-          child: const Center(
-            child: Icon(Icons.pets, color: AppTheme.leaf, size: 48),
+          child: Center(
+            child: PetAvatar(
+              size: 94,
+              mood: petMood,
+              hatId: pet?.equippedHatId,
+            ),
           ),
         ),
         const SizedBox(height: 12),

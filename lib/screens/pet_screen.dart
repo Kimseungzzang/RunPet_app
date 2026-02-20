@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:runpet_app/models/pet_model.dart';
+import 'package:runpet_app/widgets/pet_avatar.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class PetScreen extends StatelessWidget {
@@ -20,6 +21,7 @@ class PetScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final level = pet?.petLevel ?? 1;
     final exp = pet?.petExp ?? 0;
+    final mood = pet?.petMood ?? 'happy';
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -36,7 +38,13 @@ class PetScreen extends StatelessWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: const Center(child: Icon(Icons.pets, size: 48)),
+          child: Center(
+            child: PetAvatar(
+              size: 94,
+              mood: mood,
+              hatId: pet?.equippedHatId,
+            ),
+          ),
         ),
         const SizedBox(height: 10),
         RunpetCard(
