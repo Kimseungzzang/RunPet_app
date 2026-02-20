@@ -136,6 +136,13 @@ class RunpetApiClient {
     return FriendRequestModel.fromJson(json);
   }
 
+  Future<FriendRequestModel> cancelFriendRequest({
+    required int requestId,
+  }) async {
+    final json = await _post('/api/v1/friends/requests/$requestId/cancel', body: const {});
+    return FriendRequestModel.fromJson(json);
+  }
+
   Future<void> removeFriend({
     required String friendUserId,
   }) async {

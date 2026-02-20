@@ -282,6 +282,22 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'POST' && request.url.path == '/api/v1/friends/requests/2/cancel') {
+        return http.Response(
+          jsonEncode({
+            'requestId': 2,
+            'fromUserId': 'user_001',
+            'fromUsername': 'test_user',
+            'fromDisplayName': 'Test User',
+            'toUserId': 'friend_003',
+            'toUsername': 'someone',
+            'status': 'cancelled',
+            'createdAt': DateTime.now().toIso8601String(),
+          }),
+          200,
+        );
+      }
+
       return http.Response(jsonEncode({'message': 'not found'}), 404);
     }),
   );
@@ -458,6 +474,8 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.tap(find.text('Send request'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'), warnIfMissed: false);
       await tester.pumpAndSettle();
     });
   });

@@ -234,6 +234,18 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
+  Future<void> _cancelOutgoingFriendRequest(int requestId) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.cancelFriendRequest(requestId: requestId);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to cancel request: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
   Future<void> _removeFriend(String friendUserId) async {
     setState(() => _friendBusy = true);
     try {
@@ -312,6 +324,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         onSendRequest: _sendFriendRequest,
         onAcceptRequest: _acceptFriendRequest,
         onRejectRequest: _rejectFriendRequest,
+        onCancelOutgoingRequest: _cancelOutgoingFriendRequest,
         onRemoveFriend: _removeFriend,
       ),
     ];

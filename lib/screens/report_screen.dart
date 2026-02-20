@@ -13,6 +13,7 @@ class ReportScreen extends StatefulWidget {
     required this.onSendRequest,
     required this.onAcceptRequest,
     required this.onRejectRequest,
+    required this.onCancelOutgoingRequest,
     required this.onRemoveFriend,
   });
 
@@ -24,6 +25,7 @@ class ReportScreen extends StatefulWidget {
   final Future<void> Function(String username) onSendRequest;
   final Future<void> Function(int requestId) onAcceptRequest;
   final Future<void> Function(int requestId) onRejectRequest;
+  final Future<void> Function(int requestId) onCancelOutgoingRequest;
   final Future<void> Function(String friendUserId) onRemoveFriend;
 
   @override
@@ -120,7 +122,15 @@ class _ReportScreenState extends State<ReportScreen> {
               for (final req in widget.outgoingRequests)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text('${req.toUsername} (pending)'),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text('${req.toUsername} (pending)')),
+                      TextButton(
+                        onPressed: widget.isBusy ? null : () => widget.onCancelOutgoingRequest(req.requestId),
+                        child: const Text('Cancel'),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
