@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:runpet_app/config/app_config.dart';
 import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/models/shop_product.dart';
@@ -22,7 +21,7 @@ class RunpetHomeShell extends ConsumerStatefulWidget {
 }
 
 class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
-  final InAppPurchaseService _purchaseService = InAppPurchaseService();
+  late final PurchaseService _purchaseService;
 
   int _tabIndex = 0;
   PetModel? _pet;
@@ -35,6 +34,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   @override
   void initState() {
     super.initState();
+    _purchaseService = ref.read(purchaseServiceProvider);
     Future.microtask(() async {
       await _loadPet();
       await _initStore();
@@ -62,12 +62,12 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
-  Future<void> _onPurchaseCompleted(PurchaseDetails detail) async {
+  Future<void> _onPurchaseCompleted(PurchaseEvent detail) async {
     try {
       final api = ref.read(apiClientProvider);
-      final productId = detail.productID;
-      final token = detail.verificationData.serverVerificationData;
-      final transactionId = detail.purchaseID ?? 'txn_${DateTime.now().millisecondsSinceEpoch}';
+      final productId = detail.productId;
+      final token = detail.receiptToken;
+      final transactionId = detail.transactionId;
       final platform = (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ? 'ios' : 'android';
 
       final response = await api.verifyPayment(
@@ -248,5 +248,3 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     );
   }
 }
-
-
