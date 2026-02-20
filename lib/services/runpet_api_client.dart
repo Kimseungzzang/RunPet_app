@@ -106,6 +106,12 @@ class RunpetApiClient {
     return list.map((e) => FriendRequestModel.fromJson(e)).toList();
   }
 
+  Future<List<FriendRequestModel>> getOutgoingFriendRequests() async {
+    final response = await _request('GET', '/api/v1/friends/requests/outgoing');
+    final list = _decodeListOrThrow(response);
+    return list.map((e) => FriendRequestModel.fromJson(e)).toList();
+  }
+
   Future<FriendRequestModel> sendFriendRequest({
     required String targetUsername,
   }) async {

@@ -7,6 +7,7 @@ class ReportScreen extends StatefulWidget {
     super.key,
     required this.friends,
     required this.incomingRequests,
+    required this.outgoingRequests,
     required this.isBusy,
     required this.onRefresh,
     required this.onSendRequest,
@@ -17,6 +18,7 @@ class ReportScreen extends StatefulWidget {
 
   final List<FriendModel> friends;
   final List<FriendRequestModel> incomingRequests;
+  final List<FriendRequestModel> outgoingRequests;
   final bool isBusy;
   final Future<void> Function() onRefresh;
   final Future<void> Function(String username) onSendRequest;
@@ -104,6 +106,21 @@ class _ReportScreenState extends State<ReportScreen> {
                       ),
                     ],
                   ),
+                ),
+            ],
+          ),
+        ),
+        RunpetCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Outgoing requests', style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              if (widget.outgoingRequests.isEmpty) const Text('No outgoing requests'),
+              for (final req in widget.outgoingRequests)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text('${req.toUsername} (pending)'),
                 ),
             ],
           ),

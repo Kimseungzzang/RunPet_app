@@ -1,15 +1,54 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:runpet_app/models/auth_models.dart';
+import 'package:runpet_app/services/auth_session_storage.dart';
 import 'package:runpet_app/services/runpet_api_client.dart';
 import 'package:runpet_app/state/auth_state.dart';
 
 class AuthController extends StateNotifier<AuthState> {
   AuthController({
     required RunpetApiClient apiClient,
+    required AuthSessionStorage sessionStorage,
   })  : _apiClient = apiClient,
+        _sessionStorage = sessionStorage,
         super(const AuthState.initial());
 
   final RunpetApiClient _apiClient;
+  final AuthSessionStorage _sessionStorage;
+
+  Future<void> initialize() async {
+    if (state.isInitialized) return;
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final saved = await _sessionStorage.read();
+      if (saved == null) {
+        state = state.copyWith(
+          isInitialized: true,
+          isLoading: false,
+          clearSession: true,
+          clearError: true,
+        );
+        return;
+      }
+
+      _apiClient.setAuthSession(saved);
+      state = state.copyWith(session: saved, clearError: true);
+      await refreshSession();
+      state = state.copyWith(
+        isInitialized: true,
+        isLoading: false,
+        clearError: true,
+      );
+    } catch (e) {
+      _apiClient.setAuthSession(null);
+      await _sessionStorage.clear();
+      state = state.copyWith(
+        isInitialized: true,
+        isLoading: false,
+        clearSession: true,
+        errorMessage: e.toString(),
+      );
+    }
+  }
 
   Future<void> login({
     required String username,
@@ -22,6 +61,7 @@ class AuthController extends StateNotifier<AuthState> {
         password: password,
       );
       _apiClient.setAuthSession(session);
+      await _sessionStorage.write(session);
       state = state.copyWith(
         isLoading: false,
         session: session,
@@ -52,6 +92,7 @@ class AuthController extends StateNotifier<AuthState> {
         password: password,
       );
       _apiClient.setAuthSession(session);
+      await _sessionStorage.write(session);
       state = state.copyWith(
         isLoading: false,
         session: session,
@@ -75,10 +116,12 @@ class AuthController extends StateNotifier<AuthState> {
         refreshToken: session.refreshToken,
       );
       _apiClient.setAuthSession(refreshed);
+      await _sessionStorage.write(refreshed);
       state = state.copyWith(session: refreshed, clearError: true);
       return refreshed;
     } catch (_) {
       _apiClient.setAuthSession(null);
+      await _sessionStorage.clear();
       state = state.copyWith(clearSession: true, clearError: true);
       return null;
     }
@@ -98,6 +141,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
 
     _apiClient.setAuthSession(null);
+    await _sessionStorage.clear();
     state = state.copyWith(
       clearSession: true,
       clearError: true,

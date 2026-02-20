@@ -16,6 +16,14 @@ class UserProfileModel {
       displayName: json['displayName'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'username': username,
+      'displayName': displayName,
+    };
+  }
 }
 
 class AuthSessionModel {
@@ -38,5 +46,14 @@ class AuthSessionModel {
       sessionId: json['sessionId'] as String,
       user: UserProfileModel.fromJson(json['user'] as Map<String, dynamic>),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+      'sessionId': sessionId,
+      'user': user.toJson(),
+    };
   }
 }

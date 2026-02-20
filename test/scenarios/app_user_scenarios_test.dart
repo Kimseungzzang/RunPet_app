@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,8 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:runpet_app/app/runpet_app.dart';
 import 'package:runpet_app/models/auth_models.dart';
-import 'package:runpet_app/models/shop_product.dart';
 import 'package:runpet_app/models/run_models.dart';
+import 'package:runpet_app/models/shop_product.dart';
+import 'package:runpet_app/services/auth_session_storage.dart';
 import 'package:runpet_app/services/in_app_purchase_service.dart';
 import 'package:runpet_app/services/location_service.dart';
 import 'package:runpet_app/services/runpet_api_client.dart';
@@ -117,18 +118,33 @@ class _FakeRunSessionController extends RunSessionController {
   }
 }
 
+class _FakeAuthSessionStorage implements AuthSessionStorage {
+  @override
+  Future<void> clear() async {}
+
+  @override
+  Future<AuthSessionModel?> read() async => null;
+
+  @override
+  Future<void> write(AuthSessionModel session) async {}
+}
+
 class _FakeAuthController extends AuthController {
   _FakeAuthController({
     required RunpetApiClient apiClient,
     required AuthSessionModel session,
-  }) : super(apiClient: apiClient) {
+  }) : super(apiClient: apiClient, sessionStorage: _FakeAuthSessionStorage()) {
     state = AuthState(
+      isInitialized: true,
       isLoading: false,
       session: session,
       errorMessage: null,
     );
     apiClient.setAuthSession(session);
   }
+
+  @override
+  Future<void> initialize() async {}
 }
 
 RunpetApiClient _apiClient({
@@ -232,14 +248,32 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'GET' && request.url.path == '/api/v1/friends/requests/outgoing') {
+        return http.Response(
+          jsonEncode([
+            {
+              'requestId': 2,
+              'fromUserId': 'user_001',
+              'fromUsername': 'test_user',
+              'fromDisplayName': 'Test User',
+              'toUserId': 'friend_003',
+              'toUsername': 'someone',
+              'status': 'pending',
+              'createdAt': DateTime.now().toIso8601String(),
+            },
+          ]),
+          200,
+        );
+      }
+
       if (request.method == 'POST' && request.url.path == '/api/v1/friends/requests') {
         return http.Response(
           jsonEncode({
-            'requestId': 2,
+            'requestId': 3,
             'fromUserId': 'user_001',
             'fromUsername': 'test_user',
             'fromDisplayName': 'Test User',
-            'toUserId': 'friend_003',
+            'toUserId': 'friend_004',
             'toUsername': 'someone',
             'status': 'pending',
             'createdAt': DateTime.now().toIso8601String(),
@@ -409,10 +443,21 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Friends'), findsOneWidget);
-      expect(find.text('Buddy (@buddy)'), findsOneWidget);
       expect(find.text('New Friend'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Buddy (@buddy)'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Buddy (@buddy)'), findsOneWidget);
+      expect(find.text('someone (pending)'), findsOneWidget);
       await tester.enterText(find.byType(TextField).first, 'someone');
-      await tester.tap(find.text('Send request'));
+      await tester.scrollUntilVisible(
+        find.text('Send request'),
+        -120,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Send request'), warnIfMissed: false);
       await tester.pumpAndSettle();
     });
   });
