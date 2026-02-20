@@ -1,4 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:runpet_app/state/run_session_state.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class RunningScreen extends StatelessWidget {
@@ -11,6 +14,7 @@ class RunningScreen extends StatelessWidget {
     required this.durationSec,
     required this.avgPaceSec,
     required this.calories,
+    required this.routePoints,
     required this.onStartRun,
     required this.onToggleRunning,
     required this.onFinish,
@@ -23,6 +27,7 @@ class RunningScreen extends StatelessWidget {
   final int durationSec;
   final int avgPaceSec;
   final int calories;
+  final List<RunTrackPoint> routePoints;
   final VoidCallback onStartRun;
   final VoidCallback onToggleRunning;
   final VoidCallback onFinish;
@@ -34,6 +39,15 @@ class RunningScreen extends StatelessWidget {
       children: [
         Text('Running tracker', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
+        if (hasActiveRun && routePoints.isNotEmpty) ...[
+          RunpetCard(
+            child: SizedBox(
+              height: 240,
+              child: _RunRouteMap(routePoints: routePoints),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         RunpetCard(
           child: Column(
             children: [
@@ -45,7 +59,7 @@ class RunningScreen extends StatelessWidget {
           ),
         ),
         const RunpetCard(
-          child: Text('GPS stable • Background tracking enabled'),
+          child: Text('GPS stable ? Background tracking enabled'),
         ),
         if (!hasActiveRun)
           ElevatedButton(
@@ -78,6 +92,54 @@ class RunningScreen extends StatelessWidget {
     final m = (paceSec ~/ 60).toString();
     final s = (paceSec % 60).toString().padLeft(2, '0');
     return '$m\'$s"';
+  }
+}
+
+class _RunRouteMap extends StatelessWidget {
+  const _RunRouteMap({required this.routePoints});
+
+  final List<RunTrackPoint> routePoints;
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return const Center(
+        child: Text('Map preview is supported on Android/iOS for now.'),
+      );
+    }
+
+    final latLngPoints = routePoints
+        .map((p) => LatLng(p.latitude, p.longitude))
+        .toList(growable: false);
+    final current = latLngPoints.last;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: current,
+          zoom: 17,
+        ),
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
+        zoomControlsEnabled: false,
+        polylines: {
+          Polyline(
+            polylineId: const PolylineId('run_path'),
+            points: latLngPoints,
+            width: 6,
+            color: const Color(0xFF2563EB),
+          ),
+        },
+        markers: {
+          Marker(
+            markerId: const MarkerId('current_pos'),
+            position: current,
+            infoWindow: const InfoWindow(title: 'Current position'),
+          ),
+        },
+      ),
+    );
   }
 }
 

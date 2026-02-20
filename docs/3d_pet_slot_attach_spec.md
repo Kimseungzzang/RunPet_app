@@ -35,19 +35,26 @@
 
 ## Current App Integration
 - 3D mode is enabled by default via `ENABLE_3D_PET`.
-- Model URL resolution supports template:
+- Legacy model URL resolution supports template:
   - `PET_3D_MODEL_TEMPLATE_URL=https://cdn.example.com/pets/pet_{hat}_{outfit}_{bg}.glb`
 - Fallback model:
   - `PET_3D_MODEL_URL`
+- Runtime-attach mode (web-first):
+  - `ENABLE_3D_RUNTIME_ATTACH=true`
+  - `PET_3D_BASE_MODEL_URL=https://cdn.example.com/pets/pet_base.glb`
+  - `PET_3D_SLOT_MODEL_TEMPLATE_URL=https://cdn.example.com/pets/{slot}_{id}.glb`
 
 If template URL is provided, app resolves placeholders:
 - `{hat}` -> equipped hat id or `none`
 - `{outfit}` -> equipped outfit id or `none`
 - `{bg}` -> equipped background id or `none`
 
+If runtime-attach is enabled, app resolves slot placeholders:
+- `{slot}` -> `hat` | `outfit` | `bg`
+- `{id}` -> equipped item id
+
 ## Next Step for True Runtime Attach
-- Replace template-based model swap with scene-graph attach:
-  - Load base model once
-  - Attach slot mesh by `slot_*` nodes
-  - Toggle visibility/remove previous slot mesh
-  - Keep animation state machine on base rig
+- Harden runtime-attach path:
+  - Validate and monitor asset loading failures per slot
+  - Add quality fallback when slot node is missing in base model
+  - Add regression tests for resolver + runtime mode flags

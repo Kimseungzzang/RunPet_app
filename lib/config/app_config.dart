@@ -4,12 +4,24 @@ class AppConfig {
   static const String env = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
   static const String _apiBaseUrlOverride = String.fromEnvironment('API_BASE_URL', defaultValue: '');
   static const bool enable3DPet = bool.fromEnvironment('ENABLE_3D_PET', defaultValue: true);
+  static const bool enable3DRuntimeAttach = bool.fromEnvironment(
+    'ENABLE_3D_RUNTIME_ATTACH',
+    defaultValue: false,
+  );
+  static const String pet3DBaseModelUrl = String.fromEnvironment(
+    'PET_3D_BASE_MODEL_URL',
+    defaultValue: 'https://modelviewer.dev/shared-assets/models/Fox.glb',
+  );
   static const String pet3DModelUrl = String.fromEnvironment(
     'PET_3D_MODEL_URL',
     defaultValue: 'https://modelviewer.dev/shared-assets/models/Fox.glb',
   );
   static const String pet3DModelTemplateUrl = String.fromEnvironment(
     'PET_3D_MODEL_TEMPLATE_URL',
+    defaultValue: '',
+  );
+  static const String pet3DSlotModelTemplateUrl = String.fromEnvironment(
+    'PET_3D_SLOT_MODEL_TEMPLATE_URL',
     defaultValue: '',
   );
 

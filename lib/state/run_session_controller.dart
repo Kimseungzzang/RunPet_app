@@ -59,12 +59,22 @@ class RunSessionController extends StateNotifier<RunSessionState> {
       _positionSub = _locationService.watchPosition().listen((position) {
         final previous = _lastPosition;
         _lastPosition = position;
-        if (previous == null || !state.isTracking) return;
+        if (!state.isTracking) return;
+
+        final currentPoint = RunTrackPoint(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+        if (previous == null) {
+          state = state.copyWith(routePoints: [...state.routePoints, currentPoint]);
+          return;
+        }
 
         final deltaMeters = _locationService.distanceBetween(previous, position);
         if (deltaMeters <= 0) return;
         state = state.copyWith(
           distanceKm: state.distanceKm + (deltaMeters / 1000),
+          routePoints: [...state.routePoints, currentPoint],
         );
       });
     } catch (e) {

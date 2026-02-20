@@ -64,17 +64,47 @@ flowchart LR
 
 Note: real store verification requires backend env credentials.
 
+## Running Map (Google Maps)
+- Running tab now shows live route map (marker + polyline) while tracking.
+- Dependency: `google_maps_flutter`
+- Location points are collected from `geolocator` stream and rendered on map.
+
+Android setup:
+1. Put your key in `android/local.properties`
+2. Add line: `GOOGLE_MAPS_API_KEY=YOUR_ANDROID_KEY`
+
+iOS setup:
+1. Open `ios/Runner.xcworkspace`
+2. Set `GOOGLE_MAPS_API_KEY` build setting (or `.xcconfig`) with your iOS key
+
+If key is missing, map may show blank tiles.
+
 ## Real 3D Pet (Web)
 - Pet avatar uses real GLB rendering on web through `<model-viewer>`.
+- Real GLB rendering is web-first in current implementation. Mobile/desktop app falls back to pseudo-3D widget.
 - Default model URL: `https://modelviewer.dev/shared-assets/models/Fox.glb`
 - Override flags:
   - `ENABLE_3D_PET=true|false`
+  - `ENABLE_3D_RUNTIME_ATTACH=true|false`
+  - `PET_3D_BASE_MODEL_URL=https://.../pet_base.glb`
+  - `PET_3D_SLOT_MODEL_TEMPLATE_URL=https://.../{slot}_{id}.glb`
   - `PET_3D_MODEL_URL=https://.../your_pet.glb`
   - `PET_3D_MODEL_TEMPLATE_URL=https://.../pet_{hat}_{outfit}_{bg}.glb`
+
+`ENABLE_3D_RUNTIME_ATTACH=true`:
+- Uses one base model and attempts runtime slot attach on web (`slot_hat`, `slot_outfit`, `slot_bg_anchor`).
+- `PET_3D_SLOT_MODEL_TEMPLATE_URL` resolves placeholders:
+  - `{slot}` => `hat|outfit|bg`
+  - `{id}` => equipped item id
 
 Example:
 ```powershell
 flutter run -d chrome --dart-define=ENABLE_3D_PET=true --dart-define=PET_3D_MODEL_URL=https://modelviewer.dev/shared-assets/models/Fox.glb
+```
+
+Runtime-attach example:
+```powershell
+flutter run -d chrome --dart-define=ENABLE_3D_PET=true --dart-define=ENABLE_3D_RUNTIME_ATTACH=true --dart-define=PET_3D_BASE_MODEL_URL=https://cdn.example.com/pet_base.glb --dart-define=PET_3D_SLOT_MODEL_TEMPLATE_URL=https://cdn.example.com/{slot}_{id}.glb
 ```
 
 3D 슬롯 장착 규격 문서: `docs/3d_pet_slot_attach_spec.md`

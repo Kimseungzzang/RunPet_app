@@ -97,5 +97,45 @@ void main() {
       expect(result.runId, 'run_retry_ok');
       expect(runStartCall, 2);
     });
+
+    test('purchasePetItem throws ApiException when coins are insufficient', () async {
+      final client = RunpetApiClient(
+        baseUrl: 'http://localhost:8080',
+        httpClient: MockClient((request) async {
+          if (request.url.path == '/api/v1/pet/shop/purchase') {
+            return http.Response(
+              jsonEncode({'message': 'Not enough coins'}),
+              400,
+            );
+          }
+          return http.Response(jsonEncode({'message': 'not found'}), 404);
+        }),
+      );
+
+      expect(
+        () => client.purchasePetItem(itemId: 'outfit_runner_red'),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test('equipPet throws ApiException when item is not owned', () async {
+      final client = RunpetApiClient(
+        baseUrl: 'http://localhost:8080',
+        httpClient: MockClient((request) async {
+          if (request.url.path == '/api/v1/pet/equip') {
+            return http.Response(
+              jsonEncode({'message': 'Item not owned'}),
+              400,
+            );
+          }
+          return http.Response(jsonEncode({'message': 'not found'}), 404);
+        }),
+      );
+
+      expect(
+        () => client.equipPet(slotType: 'outfit', itemId: 'outfit_runner_red'),
+        throwsA(isA<ApiException>()),
+      );
+    });
   });
 }

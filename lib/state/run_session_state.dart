@@ -1,3 +1,13 @@
+class RunTrackPoint {
+  const RunTrackPoint({
+    required this.latitude,
+    required this.longitude,
+  });
+
+  final double latitude;
+  final double longitude;
+}
+
 class RunSessionState {
   const RunSessionState({
     this.activeRunId,
@@ -7,6 +17,7 @@ class RunSessionState {
     this.distanceKm = 0,
     this.avgPaceSec = 0,
     this.calories = 0,
+    this.routePoints = const [],
     this.errorMessage,
   });
 
@@ -17,6 +28,7 @@ class RunSessionState {
   final double distanceKm;
   final int avgPaceSec;
   final int calories;
+  final List<RunTrackPoint> routePoints;
   final String? errorMessage;
 
   bool get hasActiveRun => activeRunId != null;
@@ -29,6 +41,7 @@ class RunSessionState {
     double? distanceKm,
     int? avgPaceSec,
     int? calories,
+    List<RunTrackPoint>? routePoints,
     String? errorMessage,
     bool clearError = false,
   }) {
@@ -40,8 +53,8 @@ class RunSessionState {
       distanceKm: distanceKm ?? this.distanceKm,
       avgPaceSec: avgPaceSec ?? this.avgPaceSec,
       calories: calories ?? this.calories,
+      routePoints: routePoints ?? this.routePoints,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
-

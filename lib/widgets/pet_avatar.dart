@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:runpet_app/config/app_config.dart';
 import 'package:runpet_app/services/pet_3d_model_resolver.dart';
+import 'package:runpet_app/services/pet_3d_slot_asset_resolver.dart';
 import 'package:runpet_app/widgets/pet_avatar_3d_stub.dart'
     if (dart.library.html) 'package:runpet_app/widgets/pet_avatar_3d_web.dart' as pet3d;
 
@@ -277,17 +278,25 @@ class _PetAvatar3D extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final runtimeAttach = AppConfig.enable3DRuntimeAttach;
+    final modelUrl = runtimeAttach
+        ? AppConfig.pet3DBaseModelUrl
+        : Pet3DModelResolver.resolve(
+            hatId: hatId,
+            outfitId: outfitId,
+            bgId: bgId,
+          );
     final bgGradient = _backgroundGradient(bgId);
     final tilt = _tiltForMood(mood);
     final web3D = pet3d.buildPet3DWeb(
-      modelUrl: Pet3DModelResolver.resolve(
-        hatId: hatId,
-        outfitId: outfitId,
-        bgId: bgId,
-      ),
+      modelUrl: modelUrl,
       animationName: _animationName(mood),
       fallbackLabel: 'RunPet 3D',
       borderRadius: size * 0.18,
+      runtimeAttach: runtimeAttach,
+      hatAssetUrl: Pet3DSlotAssetResolver.resolve(slot: 'hat', itemId: hatId),
+      outfitAssetUrl: Pet3DSlotAssetResolver.resolve(slot: 'outfit', itemId: outfitId),
+      bgAssetUrl: Pet3DSlotAssetResolver.resolve(slot: 'bg', itemId: bgId),
     );
     return SizedBox(
       width: size,

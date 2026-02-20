@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:runpet_app/config/app_config.dart';
@@ -446,6 +446,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         durationSec: runState.durationSec,
         avgPaceSec: runState.avgPaceSec,
         calories: runState.calories,
+        routePoints: runState.routePoints,
         onStartRun: _startRunSession,
         onToggleRunning: () => ref.read(runSessionControllerProvider.notifier).toggleTracking(),
         onFinish: _finishRunSession,
@@ -532,3 +533,4 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     );
   }
 }
+
