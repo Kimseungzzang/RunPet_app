@@ -26,6 +26,18 @@ $env:API_BASE_URL="https://api.example.com"
 
 Configured in `lib/config/app_config.dart`.
 
+## .env Example (local shell env)
+Flutter는 `.env` 파일을 자동 로드하지 않으므로 실행 전에 PowerShell 환경변수로 설정합니다.
+
+```powershell
+# dev
+$env:APP_ENV="dev"
+
+# release (optional override)
+$env:APP_ENV="release"
+$env:API_BASE_URL="https://api.example.com"
+```
+
 ## System Architecture
 ```mermaid
 flowchart LR
