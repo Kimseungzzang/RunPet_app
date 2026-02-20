@@ -6,6 +6,23 @@ flutter pub get
 flutter run
 ```
 
+## Mode Run (local)
+### Dev mode
+```powershell
+.\scripts\run_dev.ps1
+```
+
+### Release mode
+```powershell
+.\scripts\run_release.ps1
+```
+
+### Release mode with custom API URL
+```powershell
+$env:API_BASE_URL="https://api.example.com"
+.\scripts\run_release.ps1
+```
+
 ## API base URL
 - Android emulator: `http://10.0.2.2:8080`
 - iOS/desktop/web: `http://localhost:8080`

@@ -1,7 +1,17 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
+  static const String env = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
+  static const String _apiBaseUrlOverride = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+
   static String get apiBaseUrl {
+    if (_apiBaseUrlOverride.isNotEmpty) return _apiBaseUrlOverride;
+
+    if (env == 'release') {
+      // Replace this with your production API domain when deployed.
+      return 'http://localhost:8080';
+    }
+
     if (kIsWeb) return 'http://localhost:8080';
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
