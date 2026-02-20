@@ -42,6 +42,8 @@ class HomeScreen extends StatelessWidget {
               size: 94,
               mood: petMood,
               hatId: pet?.equippedHatId,
+              outfitId: pet?.equippedOutfitId,
+              bgId: pet?.equippedBgId,
             ),
           ),
         ),

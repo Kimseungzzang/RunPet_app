@@ -517,7 +517,13 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
           const NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
           const NavigationDestination(icon: Icon(Icons.directions_run), label: 'Running'),
           NavigationDestination(
-            icon: PetAvatar(size: 26, mood: _pet?.petMood ?? 'happy', hatId: _pet?.equippedHatId),
+            icon: PetAvatar(
+              size: 26,
+              mood: _pet?.petMood ?? 'happy',
+              hatId: _pet?.equippedHatId,
+              outfitId: _pet?.equippedOutfitId,
+              bgId: _pet?.equippedBgId,
+            ),
             label: 'Pet',
           ),
           const NavigationDestination(icon: Icon(Icons.bar_chart_outlined), label: 'Report'),

@@ -43,6 +43,8 @@ class PetScreen extends StatelessWidget {
               size: 94,
               mood: mood,
               hatId: pet?.equippedHatId,
+              outfitId: pet?.equippedOutfitId,
+              bgId: pet?.equippedBgId,
             ),
           ),
         ),
