@@ -10,5 +10,10 @@ class AppConfig {
         return 'http://localhost:8080';
     }
   }
-}
 
+  static const Set<String> iapProductIds = {
+    'no_ads_monthly',
+    'coin_pack_starter',
+    'costume_pack_a',
+  };
+}

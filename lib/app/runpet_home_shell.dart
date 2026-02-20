@@ -1,13 +1,17 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:runpet_app/models/payment_model.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:runpet_app/config/app_config.dart';
 import 'package:runpet_app/models/pet_model.dart';
+import 'package:runpet_app/models/shop_product.dart';
 import 'package:runpet_app/screens/home_screen.dart';
 import 'package:runpet_app/screens/pet_screen.dart';
 import 'package:runpet_app/screens/report_screen.dart';
 import 'package:runpet_app/screens/run_result_screen.dart';
 import 'package:runpet_app/screens/running_screen.dart';
 import 'package:runpet_app/screens/shop_screen.dart';
+import 'package:runpet_app/services/in_app_purchase_service.dart';
 import 'package:runpet_app/state/providers.dart';
 
 class RunpetHomeShell extends ConsumerStatefulWidget {
@@ -18,14 +22,72 @@ class RunpetHomeShell extends ConsumerStatefulWidget {
 }
 
 class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
+  final InAppPurchaseService _purchaseService = InAppPurchaseService();
+
   int _tabIndex = 0;
   PetModel? _pet;
   bool _petBusy = false;
+  bool _purchaseBusy = false;
+  bool _storeAvailable = false;
+  String? _purchaseMessage;
+  List<ShopProduct> _shopProducts = const [];
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(_loadPet);
+    Future.microtask(() async {
+      await _loadPet();
+      await _initStore();
+    });
+  }
+
+  Future<void> _initStore() async {
+    try {
+      _purchaseService.startListening(
+        onPurchasedOrRestored: _onPurchaseCompleted,
+        onError: _showError,
+      );
+      _storeAvailable = await _purchaseService.isAvailable();
+      if (!_storeAvailable) {
+        setState(() {
+          _purchaseMessage = 'Store not available on this device.';
+        });
+        return;
+      }
+      final products = await _purchaseService.loadProducts(AppConfig.iapProductIds);
+      if (!mounted) return;
+      setState(() => _shopProducts = products);
+    } catch (e) {
+      _showError('Failed to initialize store: $e');
+    }
+  }
+
+  Future<void> _onPurchaseCompleted(PurchaseDetails detail) async {
+    try {
+      final api = ref.read(apiClientProvider);
+      final productId = detail.productID;
+      final token = detail.verificationData.serverVerificationData;
+      final transactionId = detail.purchaseID ?? 'txn_${DateTime.now().millisecondsSinceEpoch}';
+      final platform = (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ? 'ios' : 'android';
+
+      final response = await api.verifyPayment(
+        userId: kUserId,
+        productId: productId,
+        platform: platform,
+        transactionId: transactionId,
+        receiptToken: token,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _purchaseMessage = 'Verified: ${response.productId}';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Purchase verified: ${response.productId}')),
+      );
+    } catch (e) {
+      _showError('Purchase verification failed: $e');
+    }
   }
 
   Future<void> _loadPet() async {
@@ -90,22 +152,31 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
-  Future<PaymentVerifyResponseModel> _purchase(String productId) {
-    final api = ref.read(apiClientProvider);
-    return api.verifyPayment(
-      userId: kUserId,
-      productId: productId,
-      platform: 'android',
-      transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-      receiptToken: 'sample-receipt-token-12345',
-    );
+  Future<void> _purchase(String productId) async {
+    if (!_storeAvailable) {
+      _showError('Store is unavailable.');
+      return;
+    }
+
+    setState(() => _purchaseBusy = true);
+    try {
+      await _purchaseService.buy(productId);
+      if (!mounted) return;
+      setState(() => _purchaseMessage = 'Purchase requested for $productId');
+    } catch (e) {
+      _showError('Purchase request failed: $e');
+    } finally {
+      if (mounted) setState(() => _purchaseBusy = false);
+    }
   }
 
   void _openShop() {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ShopScreen(
-          isBusy: _petBusy,
+          isBusy: _purchaseBusy,
+          message: _purchaseMessage,
+          products: _shopProducts,
           onPurchase: _purchase,
         ),
       ),
@@ -115,6 +186,12 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   void _showError(String message) {
     if (!mounted || message.isEmpty) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  void dispose() {
+    _purchaseService.dispose();
+    super.dispose();
   }
 
   @override
@@ -167,3 +244,4 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     );
   }
 }
+

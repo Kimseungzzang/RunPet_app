@@ -1,16 +1,20 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:runpet_app/models/payment_model.dart';
+import 'package:runpet_app/models/shop_product.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class ShopScreen extends StatelessWidget {
   const ShopScreen({
     super.key,
     required this.onPurchase,
+    required this.products,
     this.isBusy = false,
+    this.message,
   });
 
-  final Future<PaymentVerifyResponseModel> Function(String productId) onPurchase;
+  final Future<void> Function(String productId) onPurchase;
+  final List<ShopProduct> products;
   final bool isBusy;
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -19,37 +23,20 @@ class ShopScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _ProductTile(
-            title: 'No Ads Monthly',
-            desc: 'Remove ads + bonus coins',
-            price: '\$3.99',
-            isBusy: isBusy,
-            onTap: () => _buy(context, 'no_ads_monthly'),
-          ),
-          _ProductTile(
-            title: 'Starter Coin Pack',
-            desc: '2,000 coins',
-            price: '\$0.99',
-            isBusy: isBusy,
-            onTap: () => _buy(context, 'coin_pack_starter'),
-          ),
-          _ProductTile(
-            title: 'Costume Pack A',
-            desc: '3 costume pieces',
-            price: '\$2.99',
-            isBusy: isBusy,
-            onTap: () => _buy(context, 'costume_pack_a'),
-          ),
+          if (message != null)
+            RunpetCard(
+              child: Text(message!),
+            ),
+          for (final product in products)
+            _ProductTile(
+              title: product.title,
+              desc: product.description,
+              price: product.priceLabel,
+              isBusy: isBusy || !product.available,
+              onTap: () => onPurchase(product.id),
+            ),
         ],
       ),
-    );
-  }
-
-  Future<void> _buy(BuildContext context, String productId) async {
-    final result = await onPurchase(productId);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Purchase verified: ${result.productId}')),
     );
   }
 }
@@ -66,7 +53,7 @@ class _ProductTile extends StatelessWidget {
   final String title;
   final String desc;
   final String price;
-  final VoidCallback onTap;
+  final Future<void> Function() onTap;
   final bool isBusy;
 
   @override

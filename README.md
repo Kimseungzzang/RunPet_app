@@ -1,6 +1,26 @@
-# runpet_app
+# RunPet App
 
-A new Flutter project.
+## Run
+```powershell
+flutter pub get
+flutter run
+```
+
+## API base URL
+- Android emulator: `http://10.0.2.2:8080`
+- iOS/desktop/web: `http://localhost:8080`
+
+Configured in `lib/config/app_config.dart`.
+
+## In-app purchase
+- Product IDs are configured in `lib/config/app_config.dart`.
+- Purchase flow:
+  1. query product details
+  2. request purchase (`in_app_purchase`)
+  3. receive purchase stream event
+  4. verify on backend (`/api/v1/payments/verify`)
+
+Note: real store verification requires backend env credentials.
 
 ## Getting Started
 
