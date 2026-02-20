@@ -200,6 +200,54 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'GET' && request.url.path == '/api/v1/friends') {
+        return http.Response(
+          jsonEncode([
+            {
+              'userId': 'friend_001',
+              'username': 'buddy',
+              'displayName': 'Buddy',
+              'since': DateTime.now().toIso8601String(),
+            },
+          ]),
+          200,
+        );
+      }
+
+      if (request.method == 'GET' && request.url.path == '/api/v1/friends/requests/incoming') {
+        return http.Response(
+          jsonEncode([
+            {
+              'requestId': 1,
+              'fromUserId': 'friend_002',
+              'fromUsername': 'new_friend',
+              'fromDisplayName': 'New Friend',
+              'toUserId': 'user_001',
+              'toUsername': 'test_user',
+              'status': 'pending',
+              'createdAt': DateTime.now().toIso8601String(),
+            },
+          ]),
+          200,
+        );
+      }
+
+      if (request.method == 'POST' && request.url.path == '/api/v1/friends/requests') {
+        return http.Response(
+          jsonEncode({
+            'requestId': 2,
+            'fromUserId': 'user_001',
+            'fromUsername': 'test_user',
+            'fromDisplayName': 'Test User',
+            'toUserId': 'friend_003',
+            'toUsername': 'someone',
+            'status': 'pending',
+            'createdAt': DateTime.now().toIso8601String(),
+          }),
+          200,
+        );
+      }
+
       return http.Response(jsonEncode({'message': 'not found'}), 404);
     }),
   );
@@ -349,6 +397,23 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Failed to load pet'), findsOneWidget);
+    });
+
+    testWidgets('Scenario 9: friend management tab loads', (tester) async {
+      final purchaseService = _FakePurchaseService();
+      await tester.pumpWidget(
+        _appWithOverrides(apiClient: _apiClient(), purchaseService: purchaseService),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Report'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Friends'), findsOneWidget);
+      expect(find.text('Buddy (@buddy)'), findsOneWidget);
+      expect(find.text('New Friend'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).first, 'someone');
+      await tester.tap(find.text('Send request'));
+      await tester.pumpAndSettle();
     });
   });
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:runpet_app/models/auth_models.dart';
+import 'package:runpet_app/models/friend_models.dart';
 import 'package:runpet_app/models/payment_model.dart';
 import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/models/run_models.dart';
@@ -91,6 +92,51 @@ class RunpetApiClient {
         if (refreshToken != null) 'refreshToken': refreshToken,
       },
     );
+  }
+
+  Future<List<FriendModel>> getFriends() async {
+    final response = await _request('GET', '/api/v1/friends');
+    final list = _decodeListOrThrow(response);
+    return list.map((e) => FriendModel.fromJson(e)).toList();
+  }
+
+  Future<List<FriendRequestModel>> getIncomingFriendRequests() async {
+    final response = await _request('GET', '/api/v1/friends/requests/incoming');
+    final list = _decodeListOrThrow(response);
+    return list.map((e) => FriendRequestModel.fromJson(e)).toList();
+  }
+
+  Future<FriendRequestModel> sendFriendRequest({
+    required String targetUsername,
+  }) async {
+    final json = await _post(
+      '/api/v1/friends/requests',
+      body: {'targetUsername': targetUsername},
+    );
+    return FriendRequestModel.fromJson(json);
+  }
+
+  Future<FriendRequestModel> acceptFriendRequest({
+    required int requestId,
+  }) async {
+    final json = await _post('/api/v1/friends/requests/$requestId/accept', body: const {});
+    return FriendRequestModel.fromJson(json);
+  }
+
+  Future<FriendRequestModel> rejectFriendRequest({
+    required int requestId,
+  }) async {
+    final json = await _post('/api/v1/friends/requests/$requestId/reject', body: const {});
+    return FriendRequestModel.fromJson(json);
+  }
+
+  Future<void> removeFriend({
+    required String friendUserId,
+  }) async {
+    final response = await _request('DELETE', '/api/v1/friends/$friendUserId');
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _decodeOrThrow(response);
+    }
   }
 
   Future<RunStartResponseModel> startRun({String? userId}) async {
@@ -197,6 +243,8 @@ class RunpetApiClient {
     late final http.Response response;
     if (method == 'GET') {
       response = await _httpClient.get(uri, headers: headers);
+    } else if (method == 'DELETE') {
+      response = await _httpClient.delete(uri, headers: headers);
     } else {
       response = await _httpClient.post(
         uri,
@@ -225,10 +273,24 @@ class RunpetApiClient {
   }
 
   Map<String, dynamic> _decodeOrThrow(http.Response response) {
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final body = response.body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ApiException((body['message'] ?? 'Request failed').toString());
     }
     return body;
+  }
+
+  List<Map<String, dynamic>> _decodeListOrThrow(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final body = response.body.isEmpty
+          ? <String, dynamic>{}
+          : jsonDecode(response.body) as Map<String, dynamic>;
+      throw ApiException((body['message'] ?? 'Request failed').toString());
+    }
+    if (response.body.isEmpty) return const [];
+    final decoded = jsonDecode(response.body) as List<dynamic>;
+    return decoded.cast<Map<String, dynamic>>();
   }
 }

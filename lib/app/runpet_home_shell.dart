@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:runpet_app/config/app_config.dart';
+import 'package:runpet_app/models/friend_models.dart';
 import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/models/shop_product.dart';
 import 'package:runpet_app/screens/home_screen.dart';
@@ -31,6 +32,9 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   bool _storeAvailable = false;
   String? _purchaseMessage;
   List<ShopProduct> _shopProducts = const [];
+  bool _friendBusy = false;
+  List<FriendModel> _friends = const [];
+  List<FriendRequestModel> _incomingFriendRequests = const [];
 
   @override
   void initState() {
@@ -173,6 +177,72 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
+  Future<void> _loadFriends() async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      final friends = await api.getFriends();
+      final incoming = await api.getIncomingFriendRequests();
+      if (!mounted) return;
+      setState(() {
+        _friends = friends;
+        _incomingFriendRequests = incoming;
+      });
+    } catch (e) {
+      _showError('Failed to load friends: $e');
+    } finally {
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
+  Future<void> _sendFriendRequest(String username) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.sendFriendRequest(targetUsername: username);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to send request: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
+  Future<void> _acceptFriendRequest(int requestId) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.acceptFriendRequest(requestId: requestId);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to accept request: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
+  Future<void> _rejectFriendRequest(int requestId) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.rejectFriendRequest(requestId: requestId);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to reject request: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
+  Future<void> _removeFriend(String friendUserId) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.removeFriend(friendUserId: friendUserId);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to remove friend: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
   void _openShop() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -230,7 +300,16 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         onEquipHat: _equipSampleHat,
         onGoShop: _openShop,
       ),
-      const ReportScreen(),
+      ReportScreen(
+        friends: _friends,
+        incomingRequests: _incomingFriendRequests,
+        isBusy: _friendBusy,
+        onRefresh: _loadFriends,
+        onSendRequest: _sendFriendRequest,
+        onAcceptRequest: _acceptFriendRequest,
+        onRejectRequest: _rejectFriendRequest,
+        onRemoveFriend: _removeFriend,
+      ),
     ];
 
     return Scaffold(
@@ -246,7 +325,12 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       body: IndexedStack(index: _tabIndex, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
-        onDestinationSelected: (index) => setState(() => _tabIndex = index),
+        onDestinationSelected: (index) {
+          setState(() => _tabIndex = index);
+          if (index == 3) {
+            _loadFriends();
+          }
+        },
         destinations: [
           const NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
           const NavigationDestination(icon: Icon(Icons.directions_run), label: 'Running'),
