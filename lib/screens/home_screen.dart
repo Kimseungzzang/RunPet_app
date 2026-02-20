@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/theme/app_theme.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
@@ -7,17 +8,22 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.onRunStart,
     required this.onGoPet,
+    this.pet,
   });
 
   final VoidCallback onRunStart;
   final VoidCallback onGoPet;
+  final PetModel? pet;
 
   @override
   Widget build(BuildContext context) {
+    final petLevel = pet?.petLevel ?? 1;
+    final petMood = pet?.petMood ?? 'happy';
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('오늘도 달려볼까요?', style: Theme.of(context).textTheme.headlineSmall),
+        Text('Ready for your next run?', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         Container(
           height: 128,
@@ -39,27 +45,27 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _CardHeader(title: '오늘 목표', rightText: '3.0 km'),
+              _CardHeader(title: 'Today goal', rightText: '3.0 km'),
               SizedBox(height: 8),
-              Text('현재 1.4km 완료'),
+              Text('Current progress 1.4 km'),
               SizedBox(height: 8),
               LinearProgressIndicator(value: 0.46, minHeight: 8),
             ],
           ),
         ),
-        const RunpetCard(
+        RunpetCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _CardHeader(title: '펫 상태', rightText: 'Lv.7'),
-              SizedBox(height: 8),
-              Text('기분 좋음 · 에너지 82%'),
+              _CardHeader(title: 'Pet status', rightText: 'Lv.$petLevel'),
+              const SizedBox(height: 8),
+              Text('Mood: $petMood • Energy 82%'),
             ],
           ),
         ),
-        ElevatedButton(onPressed: onRunStart, child: const Text('러닝 시작')),
+        ElevatedButton(onPressed: onRunStart, child: const Text('Start run')),
         const SizedBox(height: 10),
-        OutlinedButton(onPressed: onGoPet, child: const Text('펫 화면 가기')),
+        OutlinedButton(onPressed: onGoPet, child: const Text('Open pet')),
       ],
     );
   }
@@ -88,4 +94,3 @@ class _CardHeader extends StatelessWidget {
     );
   }
 }
-

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class ReportScreen extends StatelessWidget {
@@ -9,15 +9,15 @@ class ReportScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('리포트', style: Theme.of(context).textTheme.headlineSmall),
+        Text('Report', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         const RunpetCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('주간 요약', style: TextStyle(fontWeight: FontWeight.w700)),
+              Text('Weekly summary', style: TextStyle(fontWeight: FontWeight.w700)),
               SizedBox(height: 8),
-              Text('총 거리 12.4km · 러닝 4회'),
+              Text('Total distance 12.4km • Runs 4'),
             ],
           ),
         ),
@@ -25,9 +25,9 @@ class ReportScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('최고 기록', style: TextStyle(fontWeight: FontWeight.w700)),
+              Text('Best record', style: TextStyle(fontWeight: FontWeight.w700)),
               SizedBox(height: 8),
-              Text('최고 페이스 4\'58"'),
+              Text('Best pace 4\'58"'),
             ],
           ),
         ),
@@ -35,4 +35,3 @@ class ReportScreen extends StatelessWidget {
     );
   }
 }
-

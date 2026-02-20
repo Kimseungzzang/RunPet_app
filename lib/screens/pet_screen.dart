@@ -1,17 +1,30 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class PetScreen extends StatelessWidget {
-  const PetScreen({super.key, required this.onGoShop});
+  const PetScreen({
+    super.key,
+    required this.onGoShop,
+    required this.onEquipHat,
+    this.pet,
+    this.isBusy = false,
+  });
 
   final VoidCallback onGoShop;
+  final VoidCallback onEquipHat;
+  final PetModel? pet;
+  final bool isBusy;
 
   @override
   Widget build(BuildContext context) {
+    final level = pet?.petLevel ?? 1;
+    final exp = pet?.petExp ?? 0;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('펫 꾸미기', style: Theme.of(context).textTheme.headlineSmall),
+        Text('Pet customization', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         Container(
           height: 128,
@@ -26,28 +39,33 @@ class PetScreen extends StatelessWidget {
           child: const Center(child: Icon(Icons.pets, size: 48)),
         ),
         const SizedBox(height: 10),
-        const RunpetCard(
+        RunpetCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('레벨 Lv.7', style: TextStyle(fontWeight: FontWeight.w700)),
-              SizedBox(height: 8),
-              LinearProgressIndicator(value: 0.62, minHeight: 8),
-              SizedBox(height: 6),
-              Text('다음 레벨까지 38%'),
+              Text('Level Lv.$level', style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(value: exp / 100, minHeight: 8),
+              const SizedBox(height: 6),
+              Text('EXP $exp / 100'),
             ],
           ),
         ),
-        const RunpetCard(
+        RunpetCard(
           child: Column(
             children: [
-              _ItemRow(slot: '모자', name: '리프 캡'),
-              _ItemRow(slot: '의상', name: '러너 셋업'),
-              _ItemRow(slot: '배경', name: '공원 오전'),
+              _ItemRow(slot: 'Hat', name: pet?.equippedHatId ?? 'None'),
+              _ItemRow(slot: 'Outfit', name: pet?.equippedOutfitId ?? 'None'),
+              _ItemRow(slot: 'Background', name: pet?.equippedBgId ?? 'None'),
             ],
           ),
         ),
-        ElevatedButton(onPressed: onGoShop, child: const Text('상점 가기')),
+        ElevatedButton(
+          onPressed: isBusy ? null : onEquipHat,
+          child: Text(isBusy ? 'Updating...' : 'Equip sample hat'),
+        ),
+        const SizedBox(height: 8),
+        FilledButton.tonal(onPressed: onGoShop, child: const Text('Open shop')),
       ],
     );
   }
@@ -72,4 +90,3 @@ class _ItemRow extends StatelessWidget {
     );
   }
 }
-

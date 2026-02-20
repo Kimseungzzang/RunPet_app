@@ -1,29 +1,32 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:runpet_app/models/run_models.dart';
 import 'package:runpet_app/widgets/runpet_card.dart';
 
 class RunResultScreen extends StatelessWidget {
   const RunResultScreen({
     super.key,
+    required this.result,
     required this.onConfirm,
     required this.onWatchRewardAd,
   });
 
+  final RunFinishResponseModel result;
   final VoidCallback onConfirm;
   final VoidCallback onWatchRewardAd;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('러닝 완료')),
+      appBar: AppBar(title: const Text('Run complete')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const RunpetCard(
+          RunpetCard(
             child: Column(
               children: [
-                _RewardRow(label: '획득 EXP', value: '+54'),
-                _RewardRow(label: '획득 코인', value: '+31'),
-                _RewardRow(label: '스트릭', value: '5일'),
+                _RewardRow(label: 'EXP gained', value: '+${result.expGained}'),
+                _RewardRow(label: 'Coin gained', value: '+${result.coinGained}'),
+                _RewardRow(label: 'Pet level', value: 'Lv.${result.petLevel}'),
               ],
             ),
           ),
@@ -31,17 +34,17 @@ class RunResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('펫 반응', style: TextStyle(fontWeight: FontWeight.w700)),
+                Text('Pet reaction', style: TextStyle(fontWeight: FontWeight.w700)),
                 SizedBox(height: 8),
-                Text('주인님 최고! 더 달리고 싶어!'),
+                Text('Great run. Keep going!'),
               ],
             ),
           ),
-          ElevatedButton(onPressed: onConfirm, child: const Text('확인')),
+          ElevatedButton(onPressed: onConfirm, child: const Text('Confirm')),
           const SizedBox(height: 8),
           FilledButton.tonal(
             onPressed: onWatchRewardAd,
-            child: const Text('광고 보고 +30% 코인'),
+            child: const Text('Watch ad for +30% coins'),
           ),
         ],
       ),
@@ -68,4 +71,3 @@ class _RewardRow extends StatelessWidget {
     );
   }
 }
-
