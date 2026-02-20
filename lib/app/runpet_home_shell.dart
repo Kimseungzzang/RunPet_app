@@ -282,6 +282,22 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
+  Future<void> _reportUser(String userId, String reason) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.reportUser(targetUserId: userId, reason: reason);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User reported')),
+      );
+      setState(() => _friendBusy = false);
+    } catch (e) {
+      _showError('Failed to report user: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
   Future<void> _blockUser(String userId) async {
     setState(() => _friendBusy = true);
     try {
@@ -378,6 +394,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         onRejectRequest: _rejectFriendRequest,
         onCancelOutgoingRequest: _cancelOutgoingFriendRequest,
         onRemoveFriend: _removeFriend,
+        onReportUser: _reportUser,
         onBlockUser: _blockUser,
         onUnblockUser: _unblockUser,
       ),

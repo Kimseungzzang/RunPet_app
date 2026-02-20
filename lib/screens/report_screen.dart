@@ -19,6 +19,7 @@ class ReportScreen extends StatefulWidget {
     required this.onRejectRequest,
     required this.onCancelOutgoingRequest,
     required this.onRemoveFriend,
+    required this.onReportUser,
     required this.onBlockUser,
     required this.onUnblockUser,
   });
@@ -37,6 +38,7 @@ class ReportScreen extends StatefulWidget {
   final Future<void> Function(int requestId) onRejectRequest;
   final Future<void> Function(int requestId) onCancelOutgoingRequest;
   final Future<void> Function(String friendUserId) onRemoveFriend;
+  final Future<void> Function(String userId, String reason) onReportUser;
   final Future<void> Function(String userId) onBlockUser;
   final Future<void> Function(String userId) onUnblockUser;
 
@@ -205,6 +207,13 @@ class _ReportScreenState extends State<ReportScreen> {
                     children: [
                       Expanded(
                         child: Text('${friend.displayName} (@${friend.username})'),
+                      ),
+                      IconButton(
+                        tooltip: 'Report user',
+                        onPressed: widget.isBusy
+                            ? null
+                            : () => widget.onReportUser(friend.userId, 'abusive behavior'),
+                        icon: const Icon(Icons.flag_outlined),
                       ),
                       IconButton(
                         tooltip: 'Block user',

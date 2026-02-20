@@ -311,6 +311,10 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'POST' && request.url.path == '/api/v1/friends/reports') {
+        return http.Response('', 200);
+      }
+
       if (request.method == 'GET' && request.url.path == '/api/v1/friends/activity') {
         return http.Response(
           jsonEncode([

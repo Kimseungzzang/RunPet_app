@@ -171,6 +171,23 @@ class RunpetApiClient {
     }
   }
 
+  Future<void> reportUser({
+    required String targetUserId,
+    required String reason,
+  }) async {
+    final response = await _request(
+      'POST',
+      '/api/v1/friends/reports',
+      body: {
+        'targetUserId': targetUserId,
+        'reason': reason,
+      },
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _decodeOrThrow(response);
+    }
+  }
+
   Future<List<BlockedUserModel>> getBlockedUsers() async {
     final response = await _request('GET', '/api/v1/friends/blocks');
     final list = _decodeListOrThrow(response);
