@@ -27,6 +27,10 @@ class RunSessionController extends StateNotifier<RunSessionState> {
 
   Future<void> startRun() async {
     if (state.isBusy || state.hasActiveRun) return;
+    if (_userId.isEmpty) {
+      state = state.copyWith(errorMessage: 'Please login first');
+      return;
+    }
     state = state.copyWith(isBusy: true, clearError: true);
 
     try {
@@ -116,4 +120,3 @@ class RunSessionController extends StateNotifier<RunSessionState> {
     super.dispose();
   }
 }
-

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:runpet_app/models/auth_models.dart';
 import 'package:runpet_app/models/payment_model.dart';
 import 'package:runpet_app/models/pet_model.dart';
 import 'package:runpet_app/models/run_models.dart';
@@ -21,11 +22,83 @@ class RunpetApiClient {
 
   final String baseUrl;
   final http.Client _httpClient;
+  AuthSessionModel? _session;
+  Future<AuthSessionModel?> Function()? _onUnauthorized;
 
-  Future<RunStartResponseModel> startRun({required String userId}) async {
+  void setAuthSession(AuthSessionModel? session) {
+    _session = session;
+  }
+
+  void setUnauthorizedHandler(Future<AuthSessionModel?> Function()? handler) {
+    _onUnauthorized = handler;
+  }
+
+  Future<UserProfileModel> register({
+    required String username,
+    required String password,
+    required String displayName,
+  }) async {
+    final json = await _post(
+      '/api/v1/auth/register',
+      body: {
+        'username': username,
+        'password': password,
+        'displayName': displayName,
+      },
+      needsAuth: false,
+    );
+    return UserProfileModel.fromJson(json);
+  }
+
+  Future<AuthSessionModel> login({
+    required String username,
+    required String password,
+  }) async {
+    final json = await _post(
+      '/api/v1/auth/login',
+      body: {
+        'username': username,
+        'password': password,
+      },
+      needsAuth: false,
+    );
+    return AuthSessionModel.fromJson(json);
+  }
+
+  Future<AuthSessionModel> refresh({
+    required String sessionId,
+    required String refreshToken,
+  }) async {
+    final json = await _post(
+      '/api/v1/auth/refresh',
+      body: {
+        'sessionId': sessionId,
+        'refreshToken': refreshToken,
+      },
+      needsAuth: false,
+    );
+    return AuthSessionModel.fromJson(json);
+  }
+
+  Future<void> logout({
+    String? sessionId,
+    String? refreshToken,
+  }) async {
+    await _post(
+      '/api/v1/auth/logout',
+      body: {
+        if (sessionId != null) 'sessionId': sessionId,
+        if (refreshToken != null) 'refreshToken': refreshToken,
+      },
+    );
+  }
+
+  Future<RunStartResponseModel> startRun({String? userId}) async {
     final json = await _post(
       '/api/v1/runs/start',
-      body: {'userId': userId},
+      body: {
+        if (userId != null) 'userId': userId,
+      },
     );
     return RunStartResponseModel.fromJson(json);
   }
@@ -49,22 +122,22 @@ class RunpetApiClient {
     return RunFinishResponseModel.fromJson(json);
   }
 
-  Future<PetModel> getPet({required String userId}) async {
-    final uri = Uri.parse('$baseUrl/api/v1/pet?userId=$userId');
-    final response = await _httpClient.get(uri);
+  Future<PetModel> getPet({String? userId}) async {
+    final query = (userId == null || userId.isEmpty) ? '' : '?userId=$userId';
+    final response = await _request('GET', '/api/v1/pet$query');
     final json = _decodeOrThrow(response);
     return PetModel.fromJson(json);
   }
 
   Future<PetModel> equipPet({
-    required String userId,
+    String? userId,
     required String slotType,
     required String itemId,
   }) async {
     final json = await _post(
       '/api/v1/pet/equip',
       body: {
-        'userId': userId,
+        if (userId != null) 'userId': userId,
         'slotType': slotType,
         'itemId': itemId,
       },
@@ -73,7 +146,7 @@ class RunpetApiClient {
   }
 
   Future<PaymentVerifyResponseModel> verifyPayment({
-    required String userId,
+    String? userId,
     required String productId,
     required String platform,
     required String transactionId,
@@ -82,7 +155,7 @@ class RunpetApiClient {
     final json = await _post(
       '/api/v1/payments/verify',
       body: {
-        'userId': userId,
+        if (userId != null) 'userId': userId,
         'productId': productId,
         'platform': platform,
         'transactionId': transactionId,
@@ -95,14 +168,60 @@ class RunpetApiClient {
   Future<Map<String, dynamic>> _post(
     String path, {
     required Map<String, dynamic> body,
+    bool needsAuth = true,
   }) async {
-    final uri = Uri.parse('$baseUrl$path');
-    final response = await _httpClient.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
+    final response = await _request(
+      'POST',
+      path,
+      body: body,
+      needsAuth: needsAuth,
     );
     return _decodeOrThrow(response);
+  }
+
+  Future<http.Response> _request(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    bool needsAuth = true,
+    bool hasRetried = false,
+  }) async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (needsAuth && _session?.accessToken != null)
+        'Authorization': 'Bearer ${_session!.accessToken}',
+    };
+    final uri = Uri.parse('$baseUrl$path');
+    final payload = body == null ? null : jsonEncode(body);
+
+    late final http.Response response;
+    if (method == 'GET') {
+      response = await _httpClient.get(uri, headers: headers);
+    } else {
+      response = await _httpClient.post(
+        uri,
+        headers: headers,
+        body: payload,
+      );
+    }
+
+    if (!needsAuth || hasRetried || response.statusCode != 401 || _onUnauthorized == null) {
+      return response;
+    }
+
+    final refreshed = await _onUnauthorized!.call();
+    if (refreshed == null) {
+      return response;
+    }
+    _session = refreshed;
+
+    return _request(
+      method,
+      path,
+      body: body,
+      needsAuth: needsAuth,
+      hasRetried: true,
+    );
   }
 
   Map<String, dynamic> _decodeOrThrow(http.Response response) {
@@ -113,4 +232,3 @@ class RunpetApiClient {
     return body;
   }
 }
-

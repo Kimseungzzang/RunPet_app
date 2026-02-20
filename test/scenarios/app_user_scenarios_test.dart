@@ -6,11 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:runpet_app/app/runpet_app.dart';
+import 'package:runpet_app/models/auth_models.dart';
 import 'package:runpet_app/models/shop_product.dart';
 import 'package:runpet_app/models/run_models.dart';
 import 'package:runpet_app/services/in_app_purchase_service.dart';
 import 'package:runpet_app/services/location_service.dart';
 import 'package:runpet_app/services/runpet_api_client.dart';
+import 'package:runpet_app/state/auth_controller.dart';
+import 'package:runpet_app/state/auth_state.dart';
 import 'package:runpet_app/state/providers.dart';
 import 'package:runpet_app/state/run_session_controller.dart';
 import 'package:runpet_app/state/run_session_state.dart';
@@ -78,7 +81,7 @@ class _FakeRunSessionController extends RunSessionController {
             httpClient: MockClient((_) async => http.Response('{}', 200)),
           ),
           locationService: LocationService(),
-          userId: kUserId,
+          userId: 'user_001',
         );
 
   @override
@@ -99,7 +102,7 @@ class _FakeRunSessionController extends RunSessionController {
   Future<RunFinishResponseModel?> finishRun() async {
     final result = RunFinishResponseModel(
       runId: 'run_test_001',
-      userId: kUserId,
+      userId: 'user_001',
       distanceKm: 1.2,
       durationSec: 65,
       avgPaceSec: 54,
@@ -111,6 +114,20 @@ class _FakeRunSessionController extends RunSessionController {
     );
     state = const RunSessionState();
     return result;
+  }
+}
+
+class _FakeAuthController extends AuthController {
+  _FakeAuthController({
+    required RunpetApiClient apiClient,
+    required AuthSessionModel session,
+  }) : super(apiClient: apiClient) {
+    state = AuthState(
+      isLoading: false,
+      session: session,
+      errorMessage: null,
+    );
+    apiClient.setAuthSession(session);
   }
 }
 
@@ -192,9 +209,21 @@ Widget _appWithOverrides({
   required RunpetApiClient apiClient,
   required _FakePurchaseService purchaseService,
 }) {
+  const session = AuthSessionModel(
+    accessToken: 'access_test',
+    refreshToken: 'refresh_test',
+    sessionId: 'session_test',
+    user: UserProfileModel(
+      userId: 'user_001',
+      username: 'test_user',
+      displayName: 'Test User',
+    ),
+  );
+
   return ProviderScope(
     overrides: [
       apiClientProvider.overrideWithValue(apiClient),
+      authControllerProvider.overrideWith((ref) => _FakeAuthController(apiClient: apiClient, session: session)),
       purchaseServiceProvider.overrideWithValue(purchaseService),
       runSessionControllerProvider.overrideWith((ref) => _FakeRunSessionController()),
     ],

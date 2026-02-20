@@ -1,0 +1,107 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:runpet_app/models/auth_models.dart';
+import 'package:runpet_app/services/runpet_api_client.dart';
+import 'package:runpet_app/state/auth_state.dart';
+
+class AuthController extends StateNotifier<AuthState> {
+  AuthController({
+    required RunpetApiClient apiClient,
+  })  : _apiClient = apiClient,
+        super(const AuthState.initial());
+
+  final RunpetApiClient _apiClient;
+
+  Future<void> login({
+    required String username,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final session = await _apiClient.login(
+        username: username,
+        password: password,
+      );
+      _apiClient.setAuthSession(session);
+      state = state.copyWith(
+        isLoading: false,
+        session: session,
+        clearError: true,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<void> registerAndLogin({
+    required String username,
+    required String password,
+    required String displayName,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _apiClient.register(
+        username: username,
+        password: password,
+        displayName: displayName,
+      );
+      final session = await _apiClient.login(
+        username: username,
+        password: password,
+      );
+      _apiClient.setAuthSession(session);
+      state = state.copyWith(
+        isLoading: false,
+        session: session,
+        clearError: true,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<AuthSessionModel?> refreshSession() async {
+    final session = state.session;
+    if (session == null) return null;
+
+    try {
+      final refreshed = await _apiClient.refresh(
+        sessionId: session.sessionId,
+        refreshToken: session.refreshToken,
+      );
+      _apiClient.setAuthSession(refreshed);
+      state = state.copyWith(session: refreshed, clearError: true);
+      return refreshed;
+    } catch (_) {
+      _apiClient.setAuthSession(null);
+      state = state.copyWith(clearSession: true, clearError: true);
+      return null;
+    }
+  }
+
+  Future<void> logout() async {
+    final session = state.session;
+    if (session != null) {
+      try {
+        await _apiClient.logout(
+          sessionId: session.sessionId,
+          refreshToken: session.refreshToken,
+        );
+      } catch (_) {
+        // Intentionally ignore to allow local logout.
+      }
+    }
+
+    _apiClient.setAuthSession(null);
+    state = state.copyWith(
+      clearSession: true,
+      clearError: true,
+      isLoading: false,
+    );
+  }
+}

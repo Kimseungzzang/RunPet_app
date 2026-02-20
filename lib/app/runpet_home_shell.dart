@@ -72,7 +72,6 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       final platform = (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ? 'ios' : 'android';
 
       final response = await api.verifyPayment(
-        userId: kUserId,
         productId: productId,
         platform: platform,
         transactionId: transactionId,
@@ -98,7 +97,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   Future<void> _loadPet() async {
     try {
       final api = ref.read(apiClientProvider);
-      final pet = await api.getPet(userId: kUserId);
+      final pet = await api.getPet();
       if (!mounted) return;
       setState(() => _pet = pet);
     } catch (e) {
@@ -144,7 +143,6 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     try {
       final api = ref.read(apiClientProvider);
       final pet = await api.equipPet(
-        userId: kUserId,
         slotType: 'hat',
         itemId: 'hat_leaf_cap',
       );
@@ -202,6 +200,8 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   @override
   Widget build(BuildContext context) {
     final runState = ref.watch(runSessionControllerProvider);
+    final authState = ref.watch(authControllerProvider);
+    final userName = authState.session?.user.displayName ?? authState.session?.user.username ?? 'User';
 
     final pages = <Widget>[
       HomeScreen(
@@ -234,7 +234,15 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('RunPet')),
+      appBar: AppBar(
+        title: Text('RunPet - $userName'),
+        actions: [
+          IconButton(
+            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
       body: IndexedStack(index: _tabIndex, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
