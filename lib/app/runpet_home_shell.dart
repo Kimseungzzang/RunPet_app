@@ -79,6 +79,10 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       );
 
       if (!mounted) return;
+      if (response.status != 'verified') {
+        _showError('Purchase not verified: ${response.failureReason ?? response.status}');
+        return;
+      }
       setState(() {
         _purchaseMessage = 'Verified: ${response.productId}';
       });
@@ -244,4 +248,5 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     );
   }
 }
+
 

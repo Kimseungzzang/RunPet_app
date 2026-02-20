@@ -5,6 +5,7 @@ class PaymentVerifyResponseModel {
     required this.productId,
     required this.noAdsActivated,
     required this.coinGranted,
+    this.failureReason,
   });
 
   final String status;
@@ -12,6 +13,7 @@ class PaymentVerifyResponseModel {
   final String productId;
   final bool noAdsActivated;
   final int coinGranted;
+  final String? failureReason;
 
   factory PaymentVerifyResponseModel.fromJson(Map<String, dynamic> json) {
     return PaymentVerifyResponseModel(
@@ -20,7 +22,7 @@ class PaymentVerifyResponseModel {
       productId: json['productId'] as String,
       noAdsActivated: json['noAdsActivated'] as bool,
       coinGranted: json['coinGranted'] as int,
+      failureReason: json['failureReason'] as String?,
     );
   }
 }
-
