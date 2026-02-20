@@ -49,6 +49,11 @@ flowchart LR
   B --> D["PostgreSQL (release) / H2 (dev)"]
 ```
 
+## QA Documents
+- `docs/user_scenarios.md`
+- `docs/qa_test_cases.md`
+- `docs/qa_execution_guide.md`
+
 ## In-app purchase
 - Product IDs are configured in `lib/config/app_config.dart`.
 - Purchase flow:
