@@ -218,14 +218,18 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
-  Future<void> _cheerFriendActivity(String runId) async {
+  Future<void> _toggleCheerFriendActivity(String runId, bool cheeredByMe) async {
     setState(() => _friendBusy = true);
     try {
       final api = ref.read(apiClientProvider);
-      await api.cheerFriendActivity(runId: runId);
+      if (cheeredByMe) {
+        await api.uncheerFriendActivity(runId: runId);
+      } else {
+        await api.cheerFriendActivity(runId: runId);
+      }
       await _loadFriends();
     } catch (e) {
-      _showError('Failed to cheer activity: $e');
+      _showError('Failed to update cheer: $e');
       if (mounted) setState(() => _friendBusy = false);
     }
   }
@@ -402,7 +406,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         onRefresh: _loadFriends,
         onSearchUsers: _searchFriendUsers,
         onSendRequest: _sendFriendRequest,
-        onCheerActivity: _cheerFriendActivity,
+        onToggleCheerActivity: _toggleCheerFriendActivity,
         onAcceptRequest: _acceptFriendRequest,
         onRejectRequest: _rejectFriendRequest,
         onCancelOutgoingRequest: _cancelOutgoingFriendRequest,
