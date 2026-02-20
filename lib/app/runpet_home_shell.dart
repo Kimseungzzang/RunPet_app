@@ -37,6 +37,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   List<FriendRequestModel> _incomingFriendRequests = const [];
   List<FriendRequestModel> _outgoingFriendRequests = const [];
   List<FriendSearchUserModel> _friendSearchResults = const [];
+  List<BlockedUserModel> _blockedUsers = const [];
 
   @override
   void initState() {
@@ -186,11 +187,13 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       final friends = await api.getFriends();
       final incoming = await api.getIncomingFriendRequests();
       final outgoing = await api.getOutgoingFriendRequests();
+      final blocked = await api.getBlockedUsers();
       if (!mounted) return;
       setState(() {
         _friends = friends;
         _incomingFriendRequests = incoming;
         _outgoingFriendRequests = outgoing;
+        _blockedUsers = blocked;
       });
     } catch (e) {
       _showError('Failed to load friends: $e');
@@ -276,6 +279,30 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     }
   }
 
+  Future<void> _blockUser(String userId) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.blockUser(targetUserId: userId);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to block user: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
+  Future<void> _unblockUser(String userId) async {
+    setState(() => _friendBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.unblockUser(targetUserId: userId);
+      await _loadFriends();
+    } catch (e) {
+      _showError('Failed to unblock user: $e');
+      if (mounted) setState(() => _friendBusy = false);
+    }
+  }
+
   void _openShop() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -338,6 +365,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         incomingRequests: _incomingFriendRequests,
         outgoingRequests: _outgoingFriendRequests,
         searchResults: _friendSearchResults,
+        blockedUsers: _blockedUsers,
         isBusy: _friendBusy,
         onRefresh: _loadFriends,
         onSearchUsers: _searchFriendUsers,
@@ -346,6 +374,8 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
         onRejectRequest: _rejectFriendRequest,
         onCancelOutgoingRequest: _cancelOutgoingFriendRequest,
         onRemoveFriend: _removeFriend,
+        onBlockUser: _blockUser,
+        onUnblockUser: _unblockUser,
       ),
     ];
 

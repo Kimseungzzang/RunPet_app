@@ -311,6 +311,28 @@ RunpetApiClient _apiClient({
         );
       }
 
+      if (request.method == 'GET' && request.url.path == '/api/v1/friends/blocks') {
+        return http.Response(
+          jsonEncode([
+            {
+              'userId': 'blocked_001',
+              'username': 'blocked_user',
+              'displayName': 'Blocked User',
+              'blockedAt': DateTime.now().toIso8601String(),
+            },
+          ]),
+          200,
+        );
+      }
+
+      if (request.method == 'POST' && request.url.path == '/api/v1/friends/blocks/friend_001') {
+        return http.Response('', 200);
+      }
+
+      if (request.method == 'DELETE' && request.url.path == '/api/v1/friends/blocks/blocked_001') {
+        return http.Response('', 200);
+      }
+
       return http.Response(jsonEncode({'message': 'not found'}), 404);
     }),
   );
@@ -489,6 +511,14 @@ void main() {
       await tester.tap(find.text('Search users'), warnIfMissed: false);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancel'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Blocked User (@blocked_user)'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Blocked User (@blocked_user)'), findsOneWidget);
+      await tester.tap(find.text('Unblock'), warnIfMissed: false);
       await tester.pumpAndSettle();
     });
   });

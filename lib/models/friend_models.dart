@@ -75,3 +75,26 @@ class FriendSearchUserModel {
     );
   }
 }
+
+class BlockedUserModel {
+  const BlockedUserModel({
+    required this.userId,
+    required this.username,
+    required this.displayName,
+    required this.blockedAt,
+  });
+
+  final String userId;
+  final String username;
+  final String displayName;
+  final DateTime blockedAt;
+
+  factory BlockedUserModel.fromJson(Map<String, dynamic> json) {
+    return BlockedUserModel(
+      userId: json['userId'] as String,
+      username: json['username'] as String,
+      displayName: json['displayName'] as String,
+      blockedAt: DateTime.parse(json['blockedAt'] as String),
+    );
+  }
+}

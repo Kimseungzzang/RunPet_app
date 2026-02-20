@@ -9,6 +9,7 @@ class ReportScreen extends StatefulWidget {
     required this.incomingRequests,
     required this.outgoingRequests,
     required this.searchResults,
+    required this.blockedUsers,
     required this.isBusy,
     required this.onRefresh,
     required this.onSearchUsers,
@@ -17,12 +18,15 @@ class ReportScreen extends StatefulWidget {
     required this.onRejectRequest,
     required this.onCancelOutgoingRequest,
     required this.onRemoveFriend,
+    required this.onBlockUser,
+    required this.onUnblockUser,
   });
 
   final List<FriendModel> friends;
   final List<FriendRequestModel> incomingRequests;
   final List<FriendRequestModel> outgoingRequests;
   final List<FriendSearchUserModel> searchResults;
+  final List<BlockedUserModel> blockedUsers;
   final bool isBusy;
   final Future<void> Function() onRefresh;
   final Future<void> Function(String query) onSearchUsers;
@@ -31,6 +35,8 @@ class ReportScreen extends StatefulWidget {
   final Future<void> Function(int requestId) onRejectRequest;
   final Future<void> Function(int requestId) onCancelOutgoingRequest;
   final Future<void> Function(String friendUserId) onRemoveFriend;
+  final Future<void> Function(String userId) onBlockUser;
+  final Future<void> Function(String userId) onUnblockUser;
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -177,9 +183,37 @@ class _ReportScreenState extends State<ReportScreen> {
                         child: Text('${friend.displayName} (@${friend.username})'),
                       ),
                       IconButton(
+                        tooltip: 'Block user',
+                        onPressed: widget.isBusy ? null : () => widget.onBlockUser(friend.userId),
+                        icon: const Icon(Icons.block_outlined),
+                      ),
+                      IconButton(
                         tooltip: 'Remove friend',
                         onPressed: widget.isBusy ? null : () => widget.onRemoveFriend(friend.userId),
                         icon: const Icon(Icons.person_remove_outlined),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+        RunpetCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Blocked users', style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              if (widget.blockedUsers.isEmpty) const Text('No blocked users'),
+              for (final blocked in widget.blockedUsers)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text('${blocked.displayName} (@${blocked.username})')),
+                      TextButton(
+                        onPressed: widget.isBusy ? null : () => widget.onUnblockUser(blocked.userId),
+                        child: const Text('Unblock'),
                       ),
                     ],
                   ),

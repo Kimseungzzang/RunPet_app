@@ -165,6 +165,30 @@ class RunpetApiClient {
     }
   }
 
+  Future<List<BlockedUserModel>> getBlockedUsers() async {
+    final response = await _request('GET', '/api/v1/friends/blocks');
+    final list = _decodeListOrThrow(response);
+    return list.map((e) => BlockedUserModel.fromJson(e)).toList();
+  }
+
+  Future<void> blockUser({
+    required String targetUserId,
+  }) async {
+    final response = await _request('POST', '/api/v1/friends/blocks/$targetUserId');
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _decodeOrThrow(response);
+    }
+  }
+
+  Future<void> unblockUser({
+    required String targetUserId,
+  }) async {
+    final response = await _request('DELETE', '/api/v1/friends/blocks/$targetUserId');
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _decodeOrThrow(response);
+    }
+  }
+
   Future<RunStartResponseModel> startRun({String? userId}) async {
     final json = await _post(
       '/api/v1/runs/start',
