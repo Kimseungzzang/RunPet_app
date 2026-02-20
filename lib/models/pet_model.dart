@@ -7,6 +7,7 @@ class PetModel {
     this.equippedHatId,
     this.equippedOutfitId,
     this.equippedBgId,
+    this.coinBalance = 0,
   });
 
   final String userId;
@@ -16,6 +17,7 @@ class PetModel {
   final String? equippedHatId;
   final String? equippedOutfitId;
   final String? equippedBgId;
+  final int coinBalance;
 
   factory PetModel.fromJson(Map<String, dynamic> json) {
     return PetModel(
@@ -26,7 +28,7 @@ class PetModel {
       equippedHatId: json['equippedHatId'] as String?,
       equippedOutfitId: json['equippedOutfitId'] as String?,
       equippedBgId: json['equippedBgId'] as String?,
+      coinBalance: (json['coinBalance'] as num?)?.toInt() ?? 0,
     );
   }
 }
-

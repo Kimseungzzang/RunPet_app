@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:runpet_app/config/app_config.dart';
 import 'package:runpet_app/models/friend_models.dart';
 import 'package:runpet_app/models/pet_model.dart';
+import 'package:runpet_app/models/pet_shop_models.dart';
 import 'package:runpet_app/models/shop_product.dart';
 import 'package:runpet_app/screens/home_screen.dart';
 import 'package:runpet_app/screens/pet_screen.dart';
@@ -32,6 +33,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
   bool _storeAvailable = false;
   String? _purchaseMessage;
   List<ShopProduct> _shopProducts = const [];
+  List<PetShopItemModel> _petShopItems = const [];
   bool _friendBusy = false;
   List<FriendModel> _friends = const [];
   List<FriendRequestModel> _incomingFriendRequests = const [];
@@ -46,6 +48,7 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     _purchaseService = ref.read(purchaseServiceProvider);
     Future.microtask(() async {
       await _loadPet();
+      await _loadPetShop();
       await _initStore();
     });
   }
@@ -158,6 +161,60 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       setState(() => _pet = pet);
     } catch (e) {
       _showError('Failed to equip item: $e');
+    } finally {
+      if (mounted) setState(() => _petBusy = false);
+    }
+  }
+
+  Future<void> _loadPetShop() async {
+    try {
+      final api = ref.read(apiClientProvider);
+      final shop = await api.getPetShop();
+      if (!mounted) return;
+      setState(() {
+        _petShopItems = shop.items;
+      });
+    } catch (e) {
+      _showError('Failed to load shop items: $e');
+    }
+  }
+
+  Future<PetShopResponseModel> _buyPetItem(String itemId) async {
+    setState(() => _petBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      final shop = await api.purchasePetItem(itemId: itemId);
+      await _loadPet();
+      if (mounted) {
+        setState(() {
+          _petShopItems = shop.items;
+        });
+      }
+      return shop;
+    } catch (e) {
+      _showError('Failed to buy item: $e');
+      rethrow;
+    } finally {
+      if (mounted) setState(() => _petBusy = false);
+    }
+  }
+
+  Future<PetShopResponseModel> _equipPetItem(String slotType, String itemId) async {
+    setState(() => _petBusy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      final pet = await api.equipPet(slotType: slotType, itemId: itemId);
+      final shop = await api.getPetShop();
+      if (mounted) {
+        setState(() {
+          _pet = pet;
+          _petShopItems = shop.items;
+        });
+      }
+      return shop;
+    } catch (e) {
+      _showError('Failed to equip item: $e');
+      rethrow;
     } finally {
       if (mounted) setState(() => _petBusy = false);
     }
@@ -342,10 +399,14 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ShopScreen(
-          isBusy: _purchaseBusy,
+          isBusy: _purchaseBusy || _petBusy,
           message: _purchaseMessage,
           products: _shopProducts,
-          onPurchase: _purchase,
+          cosmeticItems: _petShopItems,
+          coinBalance: _pet?.coinBalance ?? 0,
+          onBuyCosmetic: _buyPetItem,
+          onEquipCosmetic: _equipPetItem,
+          onPurchaseSubscription: _purchase,
         ),
       ),
     );

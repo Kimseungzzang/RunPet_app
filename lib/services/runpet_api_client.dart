@@ -5,6 +5,7 @@ import 'package:runpet_app/models/auth_models.dart';
 import 'package:runpet_app/models/friend_models.dart';
 import 'package:runpet_app/models/payment_model.dart';
 import 'package:runpet_app/models/pet_model.dart';
+import 'package:runpet_app/models/pet_shop_models.dart';
 import 'package:runpet_app/models/run_models.dart';
 
 class ApiException implements Exception {
@@ -276,6 +277,24 @@ class RunpetApiClient {
       },
     );
     return PetModel.fromJson(json);
+  }
+
+  Future<PetShopResponseModel> getPetShop() async {
+    final response = await _request('GET', '/api/v1/pet/shop');
+    final json = _decodeOrThrow(response);
+    return PetShopResponseModel.fromJson(json);
+  }
+
+  Future<PetShopResponseModel> purchasePetItem({
+    required String itemId,
+  }) async {
+    final json = await _post(
+      '/api/v1/pet/shop/purchase',
+      body: {
+        'itemId': itemId,
+      },
+    );
+    return PetShopResponseModel.fromJson(json);
   }
 
   Future<PaymentVerifyResponseModel> verifyPayment({

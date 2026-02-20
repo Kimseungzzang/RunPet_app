@@ -165,6 +165,7 @@ RunpetApiClient _apiClient({
             'equippedHatId': null,
             'equippedOutfitId': null,
             'equippedBgId': null,
+            'coinBalance': 200,
           }),
           200,
         );
@@ -180,6 +181,61 @@ RunpetApiClient _apiClient({
             'equippedHatId': 'hat_leaf_cap',
             'equippedOutfitId': null,
             'equippedBgId': null,
+            'coinBalance': 200,
+          }),
+          200,
+        );
+      }
+
+      if (request.method == 'GET' && request.url.path == '/api/v1/pet/shop') {
+        return http.Response(
+          jsonEncode({
+            'coinBalance': 200,
+            'items': [
+              {
+                'itemId': 'hat_leaf_cap',
+                'slotType': 'hat',
+                'itemName': 'Leaf Cap',
+                'priceCoin': 0,
+                'owned': true,
+                'equipped': true,
+              },
+              {
+                'itemId': 'hat_sport_band',
+                'slotType': 'hat',
+                'itemName': 'Sport Band',
+                'priceCoin': 120,
+                'owned': false,
+                'equipped': false,
+              },
+            ],
+          }),
+          200,
+        );
+      }
+
+      if (request.method == 'POST' && request.url.path == '/api/v1/pet/shop/purchase') {
+        return http.Response(
+          jsonEncode({
+            'coinBalance': 80,
+            'items': [
+              {
+                'itemId': 'hat_leaf_cap',
+                'slotType': 'hat',
+                'itemName': 'Leaf Cap',
+                'priceCoin': 0,
+                'owned': true,
+                'equipped': false,
+              },
+              {
+                'itemId': 'hat_sport_band',
+                'slotType': 'hat',
+                'itemName': 'Sport Band',
+                'priceCoin': 120,
+                'owned': true,
+                'equipped': true,
+              },
+            ],
           }),
           200,
         );
@@ -444,10 +500,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Pet'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Equip sample hat'));
+      await tester.scrollUntilVisible(
+        find.text('Quick equip sample hat'),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Quick equip sample hat'), warnIfMissed: false);
       await tester.pumpAndSettle();
 
-      expect(find.text('hat_leaf_cap'), findsOneWidget);
+      expect(find.text('Open shop'), findsOneWidget);
     });
 
     testWidgets('Scenario 5: shop product load', (tester) async {
@@ -467,6 +528,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Shop'), findsOneWidget);
+      expect(find.textContaining('Coins:'), findsOneWidget);
+      expect(find.text('120 coins'), findsOneWidget);
     });
 
     testWidgets('Scenario 6: purchase verify success', (tester) async {

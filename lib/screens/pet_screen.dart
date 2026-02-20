@@ -56,6 +56,8 @@ class PetScreen extends StatelessWidget {
               LinearProgressIndicator(value: exp / 100, minHeight: 8),
               const SizedBox(height: 6),
               Text('EXP $exp / 100'),
+              const SizedBox(height: 6),
+              Text('Coins ${pet?.coinBalance ?? 0}'),
             ],
           ),
         ),
@@ -70,7 +72,7 @@ class PetScreen extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: isBusy ? null : onEquipHat,
-          child: Text(isBusy ? 'Updating...' : 'Equip sample hat'),
+          child: Text(isBusy ? 'Updating...' : 'Quick equip sample hat'),
         ),
         const SizedBox(height: 8),
         FilledButton.tonal(onPressed: onGoShop, child: const Text('Open shop')),
