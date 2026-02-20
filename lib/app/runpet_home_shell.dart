@@ -12,6 +12,7 @@ import 'package:runpet_app/screens/running_screen.dart';
 import 'package:runpet_app/screens/shop_screen.dart';
 import 'package:runpet_app/services/in_app_purchase_service.dart';
 import 'package:runpet_app/state/providers.dart';
+import 'package:runpet_app/widgets/pet_avatar.dart';
 
 class RunpetHomeShell extends ConsumerStatefulWidget {
   const RunpetHomeShell({super.key});
@@ -238,11 +239,14 @@ class _RunpetHomeShellState extends ConsumerState<RunpetHomeShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
         onDestinationSelected: (index) => setState(() => _tabIndex = index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.directions_run), label: 'Running'),
-          NavigationDestination(icon: Icon(Icons.pets_outlined), label: 'Pet'),
-          NavigationDestination(icon: Icon(Icons.bar_chart_outlined), label: 'Report'),
+        destinations: [
+          const NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
+          const NavigationDestination(icon: Icon(Icons.directions_run), label: 'Running'),
+          NavigationDestination(
+            icon: PetAvatar(size: 26, mood: _pet?.petMood ?? 'happy', hatId: _pet?.equippedHatId),
+            label: 'Pet',
+          ),
+          const NavigationDestination(icon: Icon(Icons.bar_chart_outlined), label: 'Report'),
         ],
       ),
     );
