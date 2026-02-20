@@ -63,3 +63,15 @@ flowchart LR
   4. verify on backend (`/api/v1/payments/verify`)
 
 Note: real store verification requires backend env credentials.
+
+## Real 3D Pet (Web)
+- Pet avatar uses real GLB rendering on web through `<model-viewer>`.
+- Default model URL: `https://modelviewer.dev/shared-assets/models/Fox.glb`
+- Override flags:
+  - `ENABLE_3D_PET=true|false`
+  - `PET_3D_MODEL_URL=https://.../your_pet.glb`
+
+Example:
+```powershell
+flutter run -d chrome --dart-define=ENABLE_3D_PET=true --dart-define=PET_3D_MODEL_URL=https://modelviewer.dev/shared-assets/models/Fox.glb
+```

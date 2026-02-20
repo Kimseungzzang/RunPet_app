@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:runpet_app/config/app_config.dart';
+import 'package:runpet_app/widgets/pet_avatar_3d_stub.dart'
+    if (dart.library.html) 'package:runpet_app/widgets/pet_avatar_3d_web.dart' as pet3d;
 
 class PetAvatar extends StatefulWidget {
   const PetAvatar({
@@ -276,6 +278,12 @@ class _PetAvatar3D extends StatelessWidget {
   Widget build(BuildContext context) {
     final bgGradient = _backgroundGradient(bgId);
     final tilt = _tiltForMood(mood);
+    final web3D = pet3d.buildPet3DWeb(
+      modelUrl: AppConfig.pet3DModelUrl,
+      animationName: _animationName(mood),
+      fallbackLabel: 'RunPet 3D',
+      borderRadius: size * 0.18,
+    );
     return SizedBox(
       width: size,
       height: size,
@@ -286,6 +294,11 @@ class _PetAvatar3D extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            if (web3D != null)
+              Positioned.fill(
+                child: web3D,
+              )
+            else ...[
             Positioned(
               left: size * 0.2,
               right: size * 0.2,
@@ -312,6 +325,7 @@ class _PetAvatar3D extends StatelessWidget {
                 ),
               ),
             ),
+            ],
             if ((hatId ?? '').isNotEmpty || (outfitId ?? '').isNotEmpty)
               Positioned(
                 left: 8,
@@ -369,6 +383,17 @@ class _PetAvatar3D extends StatelessWidget {
       return 0.05;
     }
     return 0.22;
+  }
+
+  String _animationName(String moodValue) {
+    final normalized = moodValue.toLowerCase();
+    if (normalized == 'tired') {
+      return 'Walk';
+    }
+    if (normalized == 'sad') {
+      return 'Survey';
+    }
+    return 'Run';
   }
 }
 

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 class AppConfig {
   static const String env = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
   static const String _apiBaseUrlOverride = String.fromEnvironment('API_BASE_URL', defaultValue: '');
-  static const bool enable3DPet = bool.fromEnvironment('ENABLE_3D_PET', defaultValue: false);
+  static const bool enable3DPet = bool.fromEnvironment('ENABLE_3D_PET', defaultValue: true);
   static const String pet3DModelUrl = String.fromEnvironment(
     'PET_3D_MODEL_URL',
     defaultValue: 'https://modelviewer.dev/shared-assets/models/Fox.glb',
