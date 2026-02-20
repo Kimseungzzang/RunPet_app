@@ -8,6 +8,10 @@ class AppConfig {
     'PET_3D_MODEL_URL',
     defaultValue: 'https://modelviewer.dev/shared-assets/models/Fox.glb',
   );
+  static const String pet3DModelTemplateUrl = String.fromEnvironment(
+    'PET_3D_MODEL_TEMPLATE_URL',
+    defaultValue: '',
+  );
 
   static String get apiBaseUrl {
     if (_apiBaseUrlOverride.isNotEmpty) return _apiBaseUrlOverride;

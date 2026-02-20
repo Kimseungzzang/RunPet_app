@@ -70,8 +70,11 @@ Note: real store verification requires backend env credentials.
 - Override flags:
   - `ENABLE_3D_PET=true|false`
   - `PET_3D_MODEL_URL=https://.../your_pet.glb`
+  - `PET_3D_MODEL_TEMPLATE_URL=https://.../pet_{hat}_{outfit}_{bg}.glb`
 
 Example:
 ```powershell
 flutter run -d chrome --dart-define=ENABLE_3D_PET=true --dart-define=PET_3D_MODEL_URL=https://modelviewer.dev/shared-assets/models/Fox.glb
 ```
+
+3D 슬롯 장착 규격 문서: `docs/3d_pet_slot_attach_spec.md`

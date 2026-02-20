@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:runpet_app/config/app_config.dart';
+import 'package:runpet_app/services/pet_3d_model_resolver.dart';
 import 'package:runpet_app/widgets/pet_avatar_3d_stub.dart'
     if (dart.library.html) 'package:runpet_app/widgets/pet_avatar_3d_web.dart' as pet3d;
 
@@ -279,7 +280,11 @@ class _PetAvatar3D extends StatelessWidget {
     final bgGradient = _backgroundGradient(bgId);
     final tilt = _tiltForMood(mood);
     final web3D = pet3d.buildPet3DWeb(
-      modelUrl: AppConfig.pet3DModelUrl,
+      modelUrl: Pet3DModelResolver.resolve(
+        hatId: hatId,
+        outfitId: outfitId,
+        bgId: bgId,
+      ),
       animationName: _animationName(mood),
       fallbackLabel: 'RunPet 3D',
       borderRadius: size * 0.18,
